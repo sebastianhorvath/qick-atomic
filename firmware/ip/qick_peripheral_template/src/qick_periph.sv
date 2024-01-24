@@ -11,7 +11,9 @@
 */
 //////////////////////////////////////////////////////////////////////////////
 module qick_periph # (
-   parameter PARAM     = 1
+   parameter PARAM  = 1,
+   parameter INPUTS =  1,
+   parameter IN_WIDTH = 32
 )(
 // Core CLK & RST
    input  wire          clk_i       ,
@@ -43,7 +45,8 @@ module qick_periph # (
    output reg   [31:0]  QP_DEBUG    ,
 // INPUTS 
    input  wire          qp_signal_i ,
-   input  wire  [31:0]  qp_vector_i ,
+   input  wire  [INPUTS*IN_WIDTH-1:0]  qp_vector_i ,
+   input  wire  [47:0]    qp_time, 
 // OUTPUTS
    output reg           qp_signal_o ,
    output reg   [31:0]  qp_vector_o ,

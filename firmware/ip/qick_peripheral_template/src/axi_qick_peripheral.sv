@@ -15,6 +15,7 @@
 
 module axi_qick_peripheral # (
    parameter DEBUG     = 1 ,
+   parameter IN_WIDTH  = 32,
    parameter INPUTS     = 1
 ) (
 // Core and AXI CLK & RST
@@ -36,10 +37,11 @@ module axi_qick_peripheral # (
    output reg              qp_flag_o      , // 
 // INPUTS 
    input  wire             qp_signal_i    ,
-   input  wire  [31:0]     qp_vector_i    ,
+   input  wire  [INPUTS*IN_WIDTH-1:0]     qp_vector_i    ,
+   input  wire  [47:0]     qp_time     ,
 // OUTPUTS
    output reg              qp_signal_o    ,
-   output reg   [31:0]     qp_vector_o    ,
+   output reg  [31:0]     qp_vector_o    ,
 // AXI-Lite DATA Slave I/F.   
    input  wire [5:0]       s_axi_awaddr   ,
    input  wire [2:0]       s_axi_awprot   ,
@@ -139,6 +141,7 @@ qick_periph  # (
    .QP_STATUS   ( r_qp_status   ) ,
    .QP_DEBUG    ( r_qp_debug    ) ,
    .qp_signal_i ( qp_signal_i ) ,
+   .qp_time     ( qp_time), 
    .qp_vector_i ( qp_vector_i ) ,
    .qp_signal_o ( qp_signal_o ) ,
    .qp_vector_o ( qp_vector_o ) ,
