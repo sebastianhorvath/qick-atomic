@@ -8,6 +8,7 @@
 //  QICK PROCESSOR :  Custom Peripheral Template
 /* Description: 
     Core processing unit: implement here the peripheral.
+    Eventually name this time tagger top 
 */
 //////////////////////////////////////////////////////////////////////////////
 module qick_periph # (
