@@ -23,8 +23,8 @@
 `define DISARM_CMD 2
 `define READOUT_CMD 3
 
-module tt_qcom# (
-    parameter WIDTH = 32
+module tt_qcom #(
+    parameter T_W = 32
 ) (
 // Tproc Clock and Reset Signal
     input wire clk_i,
@@ -41,26 +41,27 @@ module tt_qcom# (
     input wire fifo_empty,
 // Outputs to Time Tagger Controllers
     output reg arm,
-    output reg [47:0] start_time,
+    output reg [T_W-1:0] start_time,
+    output reg [T_W-1:0] 
     output reg read_toa, //read time tagger 
 // Outputs to QPROC  
-    output reg qp_ready_i 
+    output reg qp_ready_i, 
     output reg qp_vld_i,
     output wire qp_flag,
     output wire [31:0] qp_dt1_o,
-    output reg [31:0] qp_dt2_o,
+    output reg [31:0] qp_dt2_o
 );
 
 // Handshake Signal 
-assign handshake = qp_ready_i & qp_en_i;
+wire handshake = qp_ready_i & qp_en_i;
 
 // Flag exactly not fifo_empty
 assign qp_flag = ~fifo_empty;
 
 // Clock Register
-reg [47:0] tagger_time;
+reg [T_W-1:0] tagger_time;
 always @(posedge clk_i) begin
-    tagger_time <= qp_time;
+    tagger_time <= qp_time[T_W-1:0];
 end 
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -84,7 +85,6 @@ always @ (posedge clk_i or negedge rst_ni)  begin
     // Starting State is DISARMED
     if (!rst_ni) begin 
         input_state <= DISARMED;
-        ready <= 1;
         start_t <= 0;
     end
     else begin 
@@ -114,9 +114,7 @@ end
 assign qp_dt1_o = fifo_out; //The assignment is fine because of the valid signal sent to tproc
 
 reg [1:0] out_state;
-localparam IDLE = 2'b0,
-           POP = 2'b1,
-           READ = 2'b2;
+localparam IDLE = 2'b0, POP  = 2'b1, READ = 2'b10;
 
 always @ (posedge clk_i or negedge rst_ni ) begin
     // Don't need initial values because they are flip flops 

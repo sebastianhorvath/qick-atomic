@@ -31,15 +31,17 @@
 */
 /////////////////////////////////////////////////////////////////////////////// 
 
-module acq_ctrl (
+module acq_ctrl # (
     // Parameters
+    parameter TEST  = 0 
 ) (
     // System Inputs
     input wire clk_i,
     input wire rst_ni,
+    // Interface Input
+    input wire armed,
     // Acq Datapath Inputs
     input wire triggered,
-    input wire armed,
     input wire event_stored,
     input wire wake_up, 
     // Acq Datapath Outputs
@@ -47,6 +49,7 @@ module acq_ctrl (
     output reg store_en,
     output reg asleep
 );
+
 
 
 typedef enum {  IDLE_ST         ,
@@ -67,11 +70,11 @@ always_comb begin
     if (!rst_ni) begin
         start_acq = 0;
         store_en = 0;
-        asleep;
+        asleep = 0;
     end
     else begin
         case (acq_state)
-            IDLE_STATE: begin 
+            IDLE_ST: begin 
                 start_acq = 0;
                 store_en = 0;
                 asleep = 0;
@@ -102,14 +105,14 @@ always_ff @(posedge clk_i, negedge rst_ni) begin
     end 
     else begin 
         case (acq_state)
-            IDLE_STATE: begin 
+            IDLE_ST: begin 
                 if (armed) begin
                     acq_state <= EVENT_WAIT_ST;
                 end
             end
             EVENT_WAIT_ST: begin 
                 if(!armed) begin 
-                    acq_state <= IDLE_STATE;
+                    acq_state <= IDLE_ST;
                 end
                 else if (triggered) begin
                     acq_state <= EVENT_STORE_ST;
@@ -122,7 +125,7 @@ always_ff @(posedge clk_i, negedge rst_ni) begin
             end
             SLEEP_TIME_ST: begin 
                 if (!armed) begin 
-                    acq_state <= IDLE_STATE;
+                    acq_state <= IDLE_ST;
                 end
                 else if (wake_up) begin 
                     acq_state <= EVENT_WAIT_ST;

@@ -11,48 +11,59 @@
     Eventually name this time tagger top 
 */
 //////////////////////////////////////////////////////////////////////////////
-module qick_periph # (
-   parameter PARAM  = 1,
-   parameter INPUTS =  1,
-   parameter IN_WIDTH = 32
-)(
+module qick_periph #(
+   parameter DT_W       =  16,
+   parameter T_W        =  32,   // Length of the photon detection cd experiment = 2^32
+   parameter N_S        =   8,
+   parameter DTR_RST    =  10,   //Clock Cycles
+   parameter  DT_LAT     =   1    //Clock Cycles it takes the data to propogate (may not matter if only relative time is important)
+) (
 // Core CLK & RST
-   input  wire          clk_i       ,
-   input  wire          rst_ni   ,
+   input  wire          clk_i          ,
+   input  wire          rst_ni         ,
 // QPERIPH INTERFACE
-   input  wire          qp_en_i     , //
-   input  wire  [ 4:0]  qp_op_i    , //
-   input  wire  [31:0]  qp_dt1_i    , //
-   input  wire  [31:0]  qp_dt2_i    , // 
-   input  wire  [31:0]  qp_dt3_i    , // 
-   input  wire  [31:0]  qp_dt4_i    , // 
-   output reg           qp_rdy_o    , // 
-   output reg   [31:0]  qp_dt1_o    , // 
-   output reg   [31:0]  qp_dt2_o    , // 
-   output reg           qp_vld_o    , // 
-   output reg           qp_flag_o   , // 
+   input  wire             qp_en_i     , //
+   input  wire  [ 4:0]     qp_op_i     , //
+   input  wire  [31:0]     qp_dt1_i    , //
+   input  wire  [31:0]     qp_dt2_i    , // 
+   input  wire  [31:0]     qp_dt3_i    , // 
+   input  wire  [31:0]     qp_dt4_i    , // 
+   output reg              qp_rdy_o    , // 
+   output reg   [31:0]     qp_dt1_o    , // 
+   output reg   [31:0]     qp_dt2_o    , // 
+   output reg              qp_vld_o    , // 
+   output reg              qp_flag_o   , // 
+// Axis Stream Signals
+   input  wire  [N_S*DT_W-1:0] qp_vector_i ,
+   output wire             qp_tready   ,
+   input  wire             qp_tvalid   ,
 // AXI REG
-   input  wire  [ 7:0]  QP_CTRL     ,
-   input  wire  [ 7:0]  QP_CFG      ,
-   input  wire  [31:0]  AXI_DT1     ,
-   input  wire  [31:0]  AXI_DT2     ,
-   input  wire  [31:0]  AXI_DT3     ,
-   input  wire  [31:0]  AXI_DT4     ,
-   output reg   [31:0]  QP_DT1      ,
-   output reg   [31:0]  QP_DT2      ,
-   output reg   [31:0]  QP_DT3      ,
-   output reg   [31:0]  QP_DT4      ,
-   output reg   [31:0]  QP_STATUS   ,
-   output reg   [31:0]  QP_DEBUG    ,
+   input  wire  [ 7:0]     QP_CTRL     ,
+   input  wire  [ 7:0]     QP_CFG      ,
+   input  wire  [31:0]     QP_DELAY    ,
+   input  wire  [31:0]     QP_FRAC     ,
+   input  wire  [31:0]     AXI_DT1     ,
+   input  wire  [31:0]     AXI_DT2     ,
+   input  wire  [31:0]     AXI_DT3     ,
+   input  wire  [31:0]     AXI_DT4     ,
+   output reg   [31:0]     QP_DT1      ,
+   output reg   [31:0]     QP_DT2      ,
+   output reg   [31:0]     QP_DT3      ,
+   output reg   [31:0]     QP_DT4      ,
+   output reg   [31:0]     QP_STATUS   ,
+   output reg   [31:0]     QP_DEBUG    ,
 // INPUTS 
-   input  wire          qp_signal_i ,
-   input  wire  [INPUTS*IN_WIDTH-1:0]  qp_vector_i ,
-   input  wire  [47:0]    qp_time, 
+   input  wire             qp_signal_i ,
+   input  wire  [47:0]     qp_time     , 
 // OUTPUTS
-   output reg           qp_signal_o ,
-   output reg   [31:0]  qp_vector_o ,
+   output reg              qp_signal_o ,
+   output reg   [31:0]     qp_vector_o ,
 // DEBUG   
-   output wire [31:0]   qp_do     );
+   output wire [31:0]      qp_do     );
+
+
+//Axi Stream ready set
+assign qp_tready = 1;
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -68,7 +79,7 @@ sync_reg # (
    .rst_ni    ( rst_ni   ) ,
    .dt_o      ( axi_ctrl   ) );
 
-assign p_cmd_in     =  axi_ctrl[0] ; 
+wire p_cmd_in     =  axi_ctrl[0] ; 
 
 reg [ 7:0] p_cmd_in_r ;
 
@@ -77,7 +88,7 @@ always_ff @ (posedge clk_i, negedge rst_ni) begin
    else           p_cmd_in_r <= p_cmd_in;
 end
 //Single Pulse Control Signal
-assign p_cmd_in_t01 =  !p_cmd_in_r & p_cmd_in;
+wire p_cmd_in_t01 =  !p_cmd_in_r & p_cmd_in;
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -130,10 +141,10 @@ sync_reg # (
 ///////////////////////////////////////////////////////////////////////////////
 // PERIPHERAL PROCESSING
 ///////////////////////////////////////////////////////////////////////////////
-assign xreg_QP_DT1 = AXI_DT1 ;
-assign xreg_QP_DT2 = AXI_DT2 ;
-assign xreg_QP_DT3 = AXI_DT3 ;
-assign xreg_QP_DT4 = AXI_DT4 ;
+wire xreg_QP_DT1 = AXI_DT1 ;
+wire xreg_QP_DT2 = AXI_DT2 ;
+wire xreg_QP_DT3 = AXI_DT3 ;
+wire xreg_QP_DT4 = AXI_DT4 ;
 
 
 

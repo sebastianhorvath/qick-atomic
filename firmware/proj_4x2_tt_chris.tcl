@@ -36,26 +36,6 @@
 #
 #*****************************************************************************************
 
-# Check file required for this script exists
-proc checkRequiredFiles { origin_dir} {
-  set status true
-  set files [list \
- "[file normalize "$origin_dir/ip/qick_peripheral_template/src/_qp_ips.sv"]"\
- "[file normalize "$origin_dir/ip/qick_peripheral_template/src/qick_periph.sv"]"\
- "[file normalize "$origin_dir/ip/qick_peripheral_template/src/axi_slv_qp.vhd"]"\
- "[file normalize "$origin_dir/ip/qick_peripheral_template/src/axi_qick_peripheral.sv"]"\
- "[file normalize "$origin_dir/ip/qick_peripheral_template/src/TB/tb_periph.sv"]"\
- "[file normalize "$origin_dir/ip/qick_peripheral_template/src/TB/tb_enc.sv"]"\
-  ]
-  foreach ifile $files {
-    if { ![file isfile $ifile] } {
-      puts " Could not find remote file $ifile "
-      set status false
-    }
-  }
-
-  return $status
-}
 # Set the reference directory for source file relative paths (by default the value is script directory path)
 set origin_dir "."
 
@@ -156,7 +136,7 @@ set_property -name "target_part" -value "xczu49dr-ffvf1760-2-e" -objects $obj
 
 # Set 'sim_1' fileset object
 set obj [get_filesets sim_1]
-set files [file normalize "${origin_dir}/ip/qick_peripheral_template/src/TB"]
+set files [file normalize "${origin_dir}/ip/qick_peripheral_template/TB"]
 add_files -fileset $obj $files
 
 # Set 'sim_1' fileset file properties for local files
@@ -167,9 +147,9 @@ set obj [get_filesets sim_1]
 set_property -name "top" -value "tb_qperiph" -objects $obj
 set_property -name "top_lib" -value "xil_defaultlib" -objects $obj
 
-set idrFlowPropertiesConstraints ""
-catch {
- set idrFlowPropertiesConstraints [get_param runs.disableIDRFlowPropertyConstraints]
- set_param runs.disableIDRFlowPropertyConstraints 1
-}
+# set idrFlowPropertiesConstraints ""
+# catch {
+#  set idrFlowPropertiesConstraints [get_param runs.disableIDRFlowPropertyConstraints]
+#  set_param runs.disableIDRFlowPropertyConstraints 1
+# }
 

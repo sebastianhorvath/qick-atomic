@@ -36,6 +36,8 @@ entity axi_slv_qp is
 		-- Registers.
      QP_CTRL       : out std_logic_vector ( 7 downto 0) ;
      QP_CFG        : out std_logic_vector ( 7 downto 0) ;
+	  QP_FRAC	   : out std_logic_vector (31 downto 0) ;
+     QP_STATUS     : out std_logic_vector (31 downto 0) ;
      AXI_DT1       : out std_logic_vector (31 downto 0) ;
      AXI_DT2       : out std_logic_vector (31 downto 0) ;
      AXI_DT3       : out std_logic_vector (31 downto 0) ;
@@ -44,7 +46,7 @@ entity axi_slv_qp is
      QP_DT2        : in  std_logic_vector (31 downto 0) ;
      QP_DT3        : in  std_logic_vector (31 downto 0) ;
      QP_DT4        : in  std_logic_vector (31 downto 0) ;
-     QP_STATUS     : in  std_logic_vector (31 downto 0) ;
+	 QP_DELAY	   : in  std_logic_vector (31 downto 0) ;
      QP_DEBUG      : in  std_logic_vector (31 downto 0) );
 end axi_slv_qp;
 
@@ -518,5 +520,7 @@ AXI_DT1 <= slv_reg2(31 downto 0);
 AXI_DT2 <= slv_reg3(31 downto 0);
 AXI_DT3 <= slv_reg4(31 downto 0);
 AXI_DT4 <= slv_reg5(31 downto 0);
+QP_DELAY <= slv_reg11(31 downto 0);
+QP_FRAC <= slv_reg12(31 downto 0);
 
 end rtl;

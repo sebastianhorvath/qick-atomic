@@ -15,8 +15,8 @@
 
 module axi_qick_peripheral # (
    parameter DEBUG     = 1 ,
-   parameter IN_WIDTH  = 32,
-   parameter INPUTS     = 1
+   parameter DT_W      = 32,
+   parameter N_S       = 8
 ) (
 // Core and AXI CLK & RST
    input  wire             c_clk          ,
@@ -37,11 +37,15 @@ module axi_qick_peripheral # (
    output reg              qp_flag_o      , // 
 // INPUTS 
    input  wire             qp_signal_i    ,
-   input  wire  [INPUTS*IN_WIDTH-1:0]     qp_vector_i    ,
-   input  wire  [47:0]     qp_time     ,
+   //input  wire  [NUM_SAMPLES*DATA_WIDTH-1:0]     qp_vector_i    ,
+   input  wire  [47:0]     qp_time        ,
+// AXIS Signals
+   input  wire             s_axis_tvalid  ,
+   input  wire  [N_S*DT_W-1:0] s_axis_tdata,
+   output reg              s_axis_tready  ,
 // OUTPUTS
    output reg              qp_signal_o    ,
-   output reg  [31:0]     qp_vector_o    ,
+   output reg  [31:0]      qp_vector_o    ,
 // AXI-Lite DATA Slave I/F.   
    input  wire [5:0]       s_axi_awaddr   ,
    input  wire [2:0]       s_axi_awprot   ,
@@ -71,12 +75,15 @@ module axi_qick_peripheral # (
 // AXI Register.
 wire [ 7:0] r_qp_ctrl;
 wire [ 7:0] r_qp_cfg;
+wire [ 7:0] r_qp_delay, r_qp_frac;
 wire [31:0] r_axi_dt1, r_axi_dt2, r_axi_dt3, r_axi_dt4;
 wire [31:0] r_qp_dt1, r_qp_dt2, r_qp_dt3, r_qp_dt4;
 reg  [31:0] r_qp_status, r_qp_debug;
 
-axi_slv_qp AXI_REG (
-   .aclk       ( ps_aclk            ) , 
+axi_slv_qp # (
+
+) AXI_REG (
+   .aclk       ( ps_clk             ) , 
    .aresetn    ( ps_aresetn         ) , 
    .awaddr     ( s_axi_awaddr[5:0]  ) , 
    .awprot     ( s_axi_awprot       ) , 
@@ -100,6 +107,8 @@ axi_slv_qp AXI_REG (
 // Registers
    .QP_CTRL    ( r_qp_ctrl          ) ,
    .QP_CFG     ( r_qp_cfg           ) ,
+   .QP_DELAY   ( r_qp_delay         ) ,
+   .QP_FRAC    ( r_qp_frac          ) ,
    .AXI_DT1    ( r_axi_dt1          ) ,
    .AXI_DT2    ( r_axi_dt2          ) ,
    .AXI_DT3    ( r_axi_dt3          ) ,
@@ -130,6 +139,8 @@ qick_periph  # (
    .qp_flag_o   ( qp_flag_o   ) , 
    .QP_CTRL     ( r_qp_ctrl     ) ,
    .QP_CFG      ( r_qp_cfg      ) ,
+   .QP_DELAY    ( r_qp_delay    ) ,
+   .QP_FRAC     ( r_qp_frac     ) ,
    .AXI_DT1     ( r_axi_dt1     ) ,
    .AXI_DT2     ( r_axi_dt2     ) ,
    .AXI_DT3     ( r_axi_dt3     ) ,
@@ -142,7 +153,7 @@ qick_periph  # (
    .QP_DEBUG    ( r_qp_debug    ) ,
    .qp_signal_i ( qp_signal_i ) ,
    .qp_time     ( qp_time), 
-   .qp_vector_i ( qp_vector_i ) ,
+   .qp_vector_i ( s_axis_tdata ) ,
    .qp_signal_o ( qp_signal_o ) ,
    .qp_vector_o ( qp_vector_o ) ,
    .qp_do       ( qp_do_s     ) );
@@ -160,7 +171,7 @@ assign qp_debug_s[15: 0] = r_axi_dt4[15:0] ;
 
 generate
    if             (DEBUG == 0 )  begin: DEBUG_NO
-      assign qp_debug   = 0;
+      assign r_qp_debug   = 0;
       assign qp_do      = 0;
    end else if    (DEBUG == 1)   begin: DEBUG_REG
       assign r_qp_debug = qp_debug_s;
