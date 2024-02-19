@@ -54,15 +54,14 @@
 // (in parentheses) to your own signal names.
 
 //----------- Begin Cut here for INSTANTIATION Template ---// INST_TAG
-dsp_macro_0 your_instance_name (
-  .CLK(CLK),  // input wire CLK
-  .A(A),      // input wire [12 : 0] A
-  .C(C),      // input wire [12 : 0] C
-  .P(P)      // output wire [13 : 0] P
+dsp_edge_crossing your_instance_name (
+  .A(A),  // input wire [12 : 0] A
+  .C(C),  // input wire [12 : 0] C
+  .P(P)  // output wire [13 : 0] P
 );
 // INST_TAG_END ------ End INSTANTIATION Template ---------
 
-// You must compile the wrapper file dsp_macro_0.v when simulating
-// the core, dsp_macro_0. When compiling the wrapper file, be sure to
+// You must compile the wrapper file dsp_edge_crossing.v when simulating
+// the core, dsp_edge_crossing. When compiling the wrapper file, be sure to
 // reference the Verilog simulation library.
 

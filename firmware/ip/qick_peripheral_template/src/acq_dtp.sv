@@ -34,6 +34,7 @@ module acq_dtp #(
     input   wire      [31:0]            qp_frac     ,
     // Input from Interface 
     input   wire      [T_W-1:0]         start_time  ,
+    input   wire      [T_W-1:0]         curr_time   ,
     // Inputs from Control
     input   wire                        start_acq   ,
     input   wire                        asleep      ,
@@ -46,9 +47,23 @@ module acq_dtp #(
 
 );
 
+reg [T_W-1:0] trig_time;
+
 //////////////////////////////////////////////////////////////////////////////
 // Edge Detector
 //////////////////////////////////////////////////////////////////////////////
+always_ff @(posedge clk_i, negedge rst_ni) begin
+    if (!rst_ni) begin
+        trig_time <= 0;
+    end
+    else begin
+        // Store the time that we triggered on to store for the storage
+        if (triggered) begin
+            trig_time <= curr_time;
+        end
+    end
+end
+
 
 //////////////////////////////////////////////////////////////////////////////
 // Edge Detection Interpolation

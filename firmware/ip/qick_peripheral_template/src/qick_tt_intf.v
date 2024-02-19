@@ -42,7 +42,7 @@ module tt_qcom #(
 // Outputs to Time Tagger Controllers
     output reg arm,
     output reg [T_W-1:0] start_time,
-    output reg [T_W-1:0] 
+    output reg [T_W-1:0] curr_time,
     output reg read_toa, //read time tagger 
 // Outputs to QPROC  
     output reg qp_ready_i, 

@@ -50,9 +50,8 @@
 -- The following code must appear in the VHDL architecture header.
 
 ------------- Begin Cut here for COMPONENT Declaration ------ COMP_TAG
-COMPONENT dsp_macro_0
+COMPONENT dsp_edge_crossing
   PORT (
-    CLK : IN STD_LOGIC;
     A : IN STD_LOGIC_VECTOR(12 DOWNTO 0);
     C : IN STD_LOGIC_VECTOR(12 DOWNTO 0);
     P : OUT STD_LOGIC_VECTOR(13 DOWNTO 0) 
@@ -64,17 +63,16 @@ END COMPONENT;
 -- body. Substitute your own instance name and net names.
 
 ------------- Begin Cut here for INSTANTIATION Template ----- INST_TAG
-your_instance_name : dsp_macro_0
+your_instance_name : dsp_edge_crossing
   PORT MAP (
-    CLK => CLK,
     A => A,
     C => C,
     P => P
   );
 -- INST_TAG_END ------ End INSTANTIATION Template ---------
 
--- You must compile the wrapper file dsp_macro_0.vhd when simulating
--- the core, dsp_macro_0. When compiling the wrapper file, be sure to
+-- You must compile the wrapper file dsp_edge_crossing.vhd when simulating
+-- the core, dsp_edge_crossing. When compiling the wrapper file, be sure to
 -- reference the VHDL simulation library.
 
 
