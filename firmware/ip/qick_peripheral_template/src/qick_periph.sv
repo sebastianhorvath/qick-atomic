@@ -169,7 +169,6 @@ assign   QP_STATUS   = 0 ;
 always_ff @ (posedge clk_i, negedge rst_ni) begin
    if (!rst_ni) begin
       qp_signal_o       <= 1'b0;
-      qp_vector_o       <= '{default:'0} ;
    end else begin
       qp_signal_o       <= qp_signal_r;
       qp_vector_o       <= qp_vector_r;

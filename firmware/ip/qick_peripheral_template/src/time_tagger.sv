@@ -60,7 +60,7 @@ module time_tagger #(
 );
 
 wire triggered;
-wire event_stored;
+wire store_rdy, store_en;
 wire wake_up;
 wire asleep;
 wire start_acq;
@@ -81,13 +81,13 @@ acq_ctrl #(
     .armed          (arm)               ,
     // Inputs from Datapath
     .triggered      (triggered)         ,
-    .event_stored   (event_stored)      ,
+    .store_rdy      (store_rdy)         ,
     .wake_up        (wake_up)           ,
     // Outputs to Datapath
     .start_acq      (start_acq)         ,
     .asleep         (asleep)            ,
     // FIFO Control
-    .store_en       (toa_wren)          
+    .store_en       (store_en)          
 );
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -105,9 +105,11 @@ acq_dtp #(
     .rst_ni             (rst_ni)        ,
     // Axis Stream inputs
     .vector_i           (tdata)         ,
-    .tvalid             (tvalid)        
+    .tvalid             (tvalid)        ,
     // 
-    
+    .store_en           (store_en)      ,
+    .store_rdy          (store_rdy)     
+
     );
 
 /*
@@ -116,6 +118,7 @@ toa_dt -> fifo din
 ///////////////////////////////////////////////////////////////////////////////
 // Acquisition FIFO
 ///////////////////////////////////////////////////////////////////////////////
+assign toa_wren = store_rdy & store_en;
 
 fifo #(
     .N (FIFO_DEPTH),

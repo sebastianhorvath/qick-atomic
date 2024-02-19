@@ -31,6 +31,9 @@
 */
 /////////////////////////////////////////////////////////////////////////////// 
 
+
+// At Some point add an end function in case the experiment goes over time
+
 module acq_ctrl # (
     // Parameters
     parameter TEST  = 0 
@@ -42,7 +45,7 @@ module acq_ctrl # (
     input wire armed,
     // Acq Datapath Inputs
     input wire triggered,
-    input wire event_stored,
+    input wire store_rdy,
     input wire wake_up, 
     // Acq Datapath Outputs
     output reg start_acq,
@@ -119,7 +122,7 @@ always_ff @(posedge clk_i, negedge rst_ni) begin
                 end
             end
             EVENT_STORE_ST: begin
-                if (event_stored) begin
+                if (store_rdy) begin
                     acq_state <= SLEEP_TIME_ST;
                 end
             end

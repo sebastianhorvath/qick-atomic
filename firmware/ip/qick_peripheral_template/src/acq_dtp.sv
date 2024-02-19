@@ -37,10 +37,11 @@ module acq_dtp #(
     input   wire      [T_W-1:0]         curr_time   ,
     // Inputs from Control
     input   wire                        start_acq   ,
+    input   wire                        store_en    ,
     input   wire                        asleep      ,
     // Outputs to Control
     output  reg                         triggered   ,
-    output  reg                         event_stored,
+    output  reg                         store_rdy   , // Calculated the value to store
     output  reg                         wake_up     ,
     // FIFO Outputs
     output reg        [31:0]            toa_dt      
@@ -52,12 +53,13 @@ reg [T_W-1:0] trig_time;
 //////////////////////////////////////////////////////////////////////////////
 // Edge Detector
 //////////////////////////////////////////////////////////////////////////////
+// Storing Trigger Time
 always_ff @(posedge clk_i, negedge rst_ni) begin
     if (!rst_ni) begin
         trig_time <= 0;
     end
     else begin
-        // Store the time that we triggered on to store for the storage
+        // Store the time that we triggered on to store for the storage stage
         if (triggered) begin
             trig_time <= curr_time;
         end
@@ -70,8 +72,10 @@ end
 //////////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////////
-// Timing Subtraction
+// Module 
 //////////////////////////////////////////////////////////////////////////////
+
+
 
 
 endmodule
