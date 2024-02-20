@@ -14,9 +14,11 @@
 //////////////////////////////////////////////////////////////////////////////
 
 module axi_qick_peripheral # (
-   parameter DEBUG     = 1 ,
-   parameter DT_W      = 32,
-   parameter N_S       = 8
+   parameter DEBUG     =  1,
+   parameter DT_W      = 16,
+   parameter N_S       =  8,
+   parameter T_W       = 32,
+   parameter ADC       = 12
 ) (
 // Core and AXI CLK & RST
    input  wire             c_clk          ,
@@ -75,13 +77,12 @@ module axi_qick_peripheral # (
 // AXI Register.
 wire [ 7:0] r_qp_ctrl;
 wire [ 7:0] r_qp_cfg;
-wire [ 7:0] r_qp_delay, r_qp_frac;
+wire [31:0] r_qp_threshold, r_qp_delay, r_qp_frac;
 wire [31:0] r_axi_dt1, r_axi_dt2, r_axi_dt3, r_axi_dt4;
 wire [31:0] r_qp_dt1, r_qp_dt2, r_qp_dt3, r_qp_dt4;
 reg  [31:0] r_qp_status, r_qp_debug;
 
 axi_slv_qp # (
-
 ) AXI_REG (
    .aclk       ( ps_clk             ) , 
    .aresetn    ( ps_aresetn         ) , 
@@ -109,6 +110,7 @@ axi_slv_qp # (
    .QP_CFG     ( r_qp_cfg           ) ,
    .QP_DELAY   ( r_qp_delay         ) ,
    .QP_FRAC    ( r_qp_frac          ) ,
+   .QP_THRES   ( r_qp_threshold     ) ,
    .AXI_DT1    ( r_axi_dt1          ) ,
    .AXI_DT2    ( r_axi_dt2          ) ,
    .AXI_DT3    ( r_axi_dt3          ) ,
@@ -141,6 +143,7 @@ qick_periph  # (
    .QP_CFG      ( r_qp_cfg      ) ,
    .QP_DELAY    ( r_qp_delay    ) ,
    .QP_FRAC     ( r_qp_frac     ) ,
+   .QP_THRES    ( r_qp_threshold) ,
    .AXI_DT1     ( r_axi_dt1     ) ,
    .AXI_DT2     ( r_axi_dt2     ) ,
    .AXI_DT3     ( r_axi_dt3     ) ,
@@ -151,12 +154,12 @@ qick_periph  # (
    .QP_DT4      ( r_qp_dt4      ) ,
    .QP_STATUS   ( r_qp_status   ) ,
    .QP_DEBUG    ( r_qp_debug    ) ,
-   .qp_signal_i ( qp_signal_i ) ,
-   .qp_time     ( qp_time), 
-   .qp_vector_i ( s_axis_tdata ) ,
-   .qp_signal_o ( qp_signal_o ) ,
-   .qp_vector_o ( qp_vector_o ) ,
-   .qp_do       ( qp_do_s     ) );
+   .qp_signal_i ( qp_signal_i   ) ,
+   .qp_time     ( qp_time       ) , 
+   .qp_vector_i ( s_axis_tdata  ) ,
+   .qp_signal_o ( qp_signal_o   ) ,
+   .qp_vector_o ( qp_vector_o   ) ,
+   .qp_do       ( qp_do_s       ) );
 
 
 

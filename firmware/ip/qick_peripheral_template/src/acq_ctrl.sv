@@ -25,7 +25,7 @@
         6. dead_time > time_elapsed (wake_up)
 
     Outputs 
-        1. start_acq (signal to turn off any registers that might require writes)
+        1. acq_en (signal to turn off any registers that might require writes)
         2. store_en (essentially a write enable)
         3. asleep (conserve power and turn off subtraction might not be included
 */
@@ -35,25 +35,22 @@
 // At Some point add an end function in case the experiment goes over time
 
 module acq_ctrl # (
-    // Parameters
-    parameter TEST  = 0 
+    
 ) (
     // System Inputs
-    input wire clk_i,
-    input wire rst_ni,
+    input wire          clk_i           ,
+    input wire          rst_ni          ,
     // Interface Input
-    input wire armed,
+    input wire          armed           ,
     // Acq Datapath Inputs
-    input wire triggered,
-    input wire store_rdy,
-    input wire wake_up, 
+    input wire          triggered       ,
+    input wire          store_rdy       ,
+    input wire          wake_up         , 
     // Acq Datapath Outputs
-    output reg start_acq,
-    output reg store_en,
-    output reg asleep
+    output reg          acq_en          ,
+    output reg          store_en        ,
+    output reg          asleep
 );
-
-
 
 typedef enum {  IDLE_ST         ,
                 EVENT_WAIT_ST   ,
@@ -67,34 +64,34 @@ state_t acq_state;
 
 // State Outputs and Control Signals 
 always_comb begin 
-    start_acq = 0;
+    acq_en = 0;
     store_en = 0;
     asleep = 0;
     if (!rst_ni) begin
-        start_acq = 0;
+        acq_en = 0;
         store_en = 0;
         asleep = 0;
     end
     else begin
         case (acq_state)
             IDLE_ST: begin 
-                start_acq = 0;
+                acq_en = 0;
                 store_en = 0;
                 asleep = 0;
             end
             EVENT_WAIT_ST: begin 
-                start_acq = 1;
+                acq_en = 1;
                 store_en = 0;
                 asleep = 0;
             end
             EVENT_STORE_ST: begin
                 store_en = 1;
-                start_acq = 0;
+                acq_en = 0;
                 asleep = 0;
             end
             SLEEP_TIME_ST: begin 
                 store_en = 0;
-                start_acq = 0;
+                acq_en = 0;
                 asleep = 1;
             end
         endcase 

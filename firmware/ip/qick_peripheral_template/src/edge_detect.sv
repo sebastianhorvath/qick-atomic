@@ -19,13 +19,11 @@ module edge_detect #(
     parameter N_S       =        8           
 ) (
     input   wire                      clk_i       ,
-    input   wire                      reset_i     ,
+    input   wire                      rst_ni      ,
 
-    input   wire      [DT_W*N_S-1:0]  vector_i    ,
-    input   wire                      t_valid     ,
+    input   wire      [DT_W*N_S-1:0]  data_v      ,
 
-    input   wire                      acq_en      ,
-    input   wire                      asleep      , 
+    input   wire                      acq_en      , 
 
     input   wire      [RES-1:0]       threshold   ,  // adc threshold value
 
@@ -42,7 +40,7 @@ generate
         wire [RES+1:0] result_ii;
         reg  [RES+1:0] result_reg;
         // Determine packing order from the RF Data Conversion port
-        wire [RES:0] signed_sample_ii = vector_i[((ii+1)*DT_W)-(DT_W-RES-1):(ii*DT_W)];
+        wire [RES:0] signed_sample_ii = data_v[((ii+1)*DT_W)-(DT_W-RES-1):(ii*DT_W)];
 
         // DSP block (Changed so that I manually register the output.)
         // I need complete visibilty of the signal before registered to ensure the correct time is used for 
@@ -68,7 +66,7 @@ generate
                 if (acq_en) begin
                     result_reg <= result_ii; 
                 end
-                if (asleep) begin
+                else begin
                     result_reg <= 0;
                 end
             end

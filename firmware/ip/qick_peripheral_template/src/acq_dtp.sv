@@ -19,41 +19,44 @@ module acq_dtp #(
     // Parameters 
     parameter DT_W      =   16,
     parameter N_S       =    8,
+    parameter RES       =   12,
     parameter T_W       =   32, // Concatenated total experimental time
     parameter DTR_RST   =   10, // Clock Cycles: 10 * (1/350e6) = Detector Reset Time
-    parameter DT_LAT    =    1 // Number of Clock cycles it takes the DATA to propogate through the constant fraction discriminator
-) (
+)
     // System Inputs
     input   wire                        clk_i       ,
     input   wire                        rst_ni      ,
     // Axis Stream Signals
-    input   wire      [N_S*DT_W-1:0]    vector_i    ,
-    input   wire                        tvalid      ,
+    input   wire      [N_S*DT_W-1:0]    data_v      ,
     // Axis Registers
-    input   wire      [31:0]            qp_delay    ,
-    input   wire      [31:0]            qp_frac     ,
+    // input   wire      [31:0]            qp_delay    ,
+    // input   wire      [31:0]            qp_frac     ,
     // Input from Interface 
     input   wire      [T_W-1:0]         start_time  ,
     input   wire      [T_W-1:0]         curr_time   ,
     // Inputs from Control
-    input   wire                        start_acq   ,
+    input   wire                        acq_en      ,
     input   wire                        store_en    ,
     input   wire                        asleep      ,
+    input   wire      [RES-1:0]         threshold   ,                 
     // Outputs to Control
     output  reg                         triggered   ,
     output  reg                         store_rdy   , // Calculated the value to store
-    output  reg                         wake_up     ,
+    output  wire                        wake_up     ,
     // FIFO Outputs
-    output reg        [31:0]            toa_dt      
-
+    output  reg        [T_W-1:0]        toa_dt      
 );
+
+localparam int N_B = $clog2(N_S);
+
+wire [N_S-1:0] edge_index;
+
+/////////////////////////////////////////////////////////////////////////////
+// Storing the Trigger Time (Prevents effects from latency)
+/////////////////////////////////////////////////////////////////////////////
 
 reg [T_W-1:0] trig_time;
 
-//////////////////////////////////////////////////////////////////////////////
-// Edge Detector
-//////////////////////////////////////////////////////////////////////////////
-// Storing Trigger Time
 always_ff @(posedge clk_i, negedge rst_ni) begin
     if (!rst_ni) begin
         trig_time <= 0;
@@ -68,13 +71,71 @@ end
 
 
 //////////////////////////////////////////////////////////////////////////////
-// Edge Detection Interpolation
+// Dead Time counter 
 //////////////////////////////////////////////////////////////////////////////
+localparam int DEAD_W = $clog2(DTR_RST);
+
+reg [DEAD_W-1:0] dead_time;
+
+assign wake_up = (dead_time == 0);
+
+always_ff @(posedge clk_i, negedge rst_ni) begin
+    if (!rst_ni) begin
+        dead_time <= DTR_RST;
+    end 
+    else begin 
+        if (asleep) begin
+            dead_time <= dead_time - 1; 
+        end 
+        else begin
+            dead_time <= DTR_RST;
+        end
+    end
+end
+
 
 //////////////////////////////////////////////////////////////////////////////
-// Module 
+// Edge Detector (Can Replace with the Constant Fraction Discrimination)
 //////////////////////////////////////////////////////////////////////////////
 
+edge_detect #(
+    .DT_W       (DT_W)  ,
+    .N_S        (N_S)   ,
+    .RES        (RES)    
+) photon_arrival (
+    .clk_i             (clk_i)      ,
+    .rst_ni            (rst_ni)     ,
+
+    .data_v            (data_v)     ,
+    
+    .acq_en            (acq_en)     ,
+    .threshold         (threshold)  ,
+
+    .triggered         (triggered)  ,
+    .edge_index        (edge_index) ,
+);
+
+//////////////////////////////////////////////////////////////////////////////
+// Edge Detection Interpolation 
+//////////////////////////////////////////////////////////////////////////////
+
+
+t_interpolate #(
+    .T_W        (T_W)   ,
+    .N_S        (N_S)   ,
+    .N_B        (N_B)
+) precise_time (
+    .clk_i          (clk_i)         ,
+    .rst_ni         (rst_ni)        ,
+
+    .trig_time      (trig_time)     ,
+
+    .store_en       (store_en)      ,
+    .edge_index     (edge_index)    ,
+
+    .store_rdy      (store_rdy)     ,
+    .edge_time      (toa_dt)        ,
+);
 
 
 

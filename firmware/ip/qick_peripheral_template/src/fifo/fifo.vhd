@@ -1,7 +1,11 @@
+-- Add Logic to Calculate the number of values in fifo
+
+
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.MATH_REAL.ALL;
 use IEEE.NUMERIC_STD.ALL;
+
 
 entity fifo is
     Generic

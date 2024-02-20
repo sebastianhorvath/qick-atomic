@@ -34,23 +34,24 @@
 
 module time_tagger #(
     // Add parameters that you want to pass down
-    parameter FIFO_DEPTH    = 128,
+    parameter FIFO_DEP      = 128,
     parameter T_W           = 32, //Timer Width 
-    parameter N_S           = 8,
-    parameter DT_W          = 16
+    parameter N_S           =  8,
+    parameter DT_W          = 16,
+    parameter RES           = 12,
+    parameter DTR_RST       = 10
 ) (
     // Tproc Clock and Reset Signal
     input   wire                        clk_i       ,
     input   wire                        rst_ni      ,
     // Axis Stream Signals
     input   wire      [N_S*DT_W-1:0]    tdata       ,
-    input   wire                        tvalid      ,
     // Axi Registers 
-    input   wire        [31:0]          qp_delay    ,
-    input   wire        [31:0]          qp_frac     ,
+    input   wire        [31:0]          threshold   ,
     // Inputs from the Interface
     input wire                          arm         ,
     input wire          [T_W-1:0]       start_time  ,
+    input wire          [T_W-1:0]       curr_time   ,
     input wire                          read_toa    , // connect to interface pop
     // Outputs to the Interface
     output reg          [31:0]          fifo_out    ,
@@ -63,8 +64,10 @@ wire triggered;
 wire store_rdy, store_en;
 wire wake_up;
 wire asleep;
-wire start_acq;
+wire acq_en;
 wire toa_wren;
+
+wire [31:0] toa_dt;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Acquistion Control
@@ -84,7 +87,7 @@ acq_ctrl #(
     .store_rdy      (store_rdy)         ,
     .wake_up        (wake_up)           ,
     // Outputs to Datapath
-    .start_acq      (start_acq)         ,
+    .acq_en         (acq_en)            ,
     .asleep         (asleep)            ,
     // FIFO Control
     .store_en       (store_en)          
@@ -93,28 +96,37 @@ acq_ctrl #(
 ///////////////////////////////////////////////////////////////////////////////
 // Acqusition Datapath
 ///////////////////////////////////////////////////////////////////////////////
+
+// Make Sure we only take the top bottom 12 bits of Threshold 
+
 acq_dtp #(
-    .DT_W       ()      ,
-    .T_W        ()      ,
-    .N_S        ()      ,
-    .DTR_RST    ()      ,
-    .DT_LAT     ()
+    .DT_W       (DT_W)      ,
+    .N_S        (N_S)       ,
+    .T_W        (T_W)       ,
+    .RES        (RES)       ,
+    .DTR_RST    (DTR_RST)     
 ) tagger_dtp (
     // System Inputs
-    .clk_i              (clk_i)         ,
-    .rst_ni             (rst_ni)        ,
+    .clk_i              (clk_i)             ,
+    .rst_ni             (rst_ni)            ,
     // Axis Stream inputs
-    .vector_i           (tdata)         ,
-    .tvalid             (tvalid)        ,
-    // 
-    .store_en           (store_en)      ,
-    .store_rdy          (store_rdy)     
+    .data_v             (tdata)             ,
+    
+    .start_time         (start_time)        ,
+    .curr_time          (curr_time)         ,
 
-    );
+    .acq_en             (acq_en)            ,
+    .store_en           (store_en)          ,
+    .asleep             (asleep)            ,
+    .threshold          (threshold[RES-1:0]),
 
-/*
-toa_dt -> fifo din 
-*/  
+    .triggered          (triggered)         ,
+    .store_rdy          (store_rdy)         ,
+    .wake_up            (wake_up)           ,
+
+    .toa_dt             (toa_dt)
+);
+
 ///////////////////////////////////////////////////////////////////////////////
 // Acquisition FIFO
 ///////////////////////////////////////////////////////////////////////////////
@@ -122,7 +134,7 @@ assign toa_wren = store_rdy & store_en;
 
 fifo #(
     .N (FIFO_DEPTH),
-    .B (TIME_WIDTH)
+    .B (T_W)
 ) data_fifo (
     .rstn   (rst_ni),
     .clk    (clk_i),
@@ -134,7 +146,11 @@ fifo #(
 );
 
 
+//////////////////////////////////////////////////////////////////////////////
+// Status Register
+//////////////////////////////////////////////////////////////////////////////
 
+// Add a counter for fifo to stream out the number of values (Shouldn't be hard in hdl)
 
 
 

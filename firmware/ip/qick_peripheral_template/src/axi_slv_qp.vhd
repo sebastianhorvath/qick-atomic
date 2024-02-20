@@ -5,6 +5,8 @@ use ieee.numeric_std.all;
 entity axi_slv_qp is 
     Generic (
 		DATA_WIDTH	: integer	:= 32;
+		T_W			: integer   := 32;
+		ADC			: integer   := 12;
 		ADDR_WIDTH	: integer	:= 6);	
 	Port 	(
 		aclk		: in std_logic;
@@ -36,7 +38,9 @@ entity axi_slv_qp is
 		-- Registers.
      QP_CTRL       : out std_logic_vector ( 7 downto 0) ;
      QP_CFG        : out std_logic_vector ( 7 downto 0) ;
-	  QP_FRAC	   : out std_logic_vector (31 downto 0) ;
+	 QP_FRAC	   : out std_logic_vector (31 downto 0) ;
+	 QP_DELAY	   : out std_logic_vector (31 downto 0) ;
+	 QP_THRES	   : out std_logic_vector (31 downto 0) ;
      QP_STATUS     : out std_logic_vector (31 downto 0) ;
      AXI_DT1       : out std_logic_vector (31 downto 0) ;
      AXI_DT2       : out std_logic_vector (31 downto 0) ;
@@ -522,5 +526,6 @@ AXI_DT3 <= slv_reg4(31 downto 0);
 AXI_DT4 <= slv_reg5(31 downto 0);
 QP_DELAY <= slv_reg11(31 downto 0);
 QP_FRAC <= slv_reg12(31 downto 0);
+QP_THRES <= slv_reg13(31 downto 0);
 
 end rtl;
