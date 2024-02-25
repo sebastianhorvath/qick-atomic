@@ -7,14 +7,17 @@ use IEEE.MATH_REAL.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
 
-entity fifo is
+entity tt_fifo is
     Generic
     (
         -- Data width.
         B : Integer := 16;
         
         -- Fifo depth.
-        N : Integer := 4
+        N : Integer := 4;
+
+        -- Width for Depth
+        N_W : Integer := 3
     );
     Port
     ( 
@@ -28,14 +31,17 @@ entity fifo is
         -- Read I/F.
         rd_en  	: in std_logic;
         dout   	: out std_logic_vector (B-1 downto 0);
+
+        -- Status
+        d_count : out std_logic_vector ( N_W - 1 downto 0);
         
         -- Flags.
         full    : out std_logic;        
         empty   : out std_logic
     );
-end fifo;
+end tt_fifo;
 
-architecture rtl of fifo is
+architecture rtl of tt_fifo is
 
 -- Number of bits of depth.
 constant N_LOG2 : Integer := Integer(ceil(log2(real(N))));
@@ -63,6 +69,9 @@ end component;
 -- Pointers.
 signal wptr   	: unsigned (N_LOG2-1 downto 0);
 signal rptr   	: unsigned (N_LOG2-1 downto 0);
+
+-- Count 
+signal data_count : unsigned (N_LOG2-1 downto 0);
 
 -- Memory signals.
 signal mem_wea	: std_logic;
@@ -103,6 +112,9 @@ full_i 	<=  '1' when wptr = rptr - 1 else
 empty_i	<= 	'1' when wptr = rptr else
 			'0';
 
+-- Count Logic 
+data_count <= wptr - rptr;
+
 -- wr_clk registers.
 process (clk)
 begin
@@ -134,6 +146,7 @@ end process;
 dout   	<= mem_dob;
 full    <= full_i;
 empty   <= empty_i;
+d_count <= std_logic_vector(data_count);
 
 end rtl;
 

@@ -31,14 +31,15 @@
 
 */
 //////////////////////////////////////////////////////////////////////////////
+`include "../headers/cmd_err.svh"
 
 module time_tagger #(
     // Add parameters that you want to pass down
     parameter FIFO_DEP      = 128,
-    parameter T_W           = 32, //Timer Width 
+    parameter T_W           = 32, // Timer Width 
     parameter N_S           =  8,
     parameter DT_W          = 16,
-    parameter RES           = 12,
+    parameter RES           = 12, // ADC
     parameter DTR_RST       = 10
 ) (
     // Tproc Clock and Reset Signal
@@ -55,10 +56,13 @@ module time_tagger #(
     input wire                          read_toa    , // connect to interface pop
     // Outputs to the Interface
     output reg          [31:0]          fifo_out    ,
-    output reg          [31:0]          status      , // this might get eliminated
+    output reg          [31:0]          status      , 
     output reg                          fifo_empty
 
 );
+
+localparam int ERR_W = 3;
+
 
 wire triggered;
 wire store_rdy, store_en;
@@ -130,11 +134,15 @@ acq_dtp #(
 ///////////////////////////////////////////////////////////////////////////////
 // Acquisition FIFO
 ///////////////////////////////////////////////////////////////////////////////
+localparam int DEP_W = $clog2(FIFO_DEP);
+
+wire [31:0] fifo_count; 
 assign toa_wren = store_rdy & store_en;
 
-fifo #(
-    .N (FIFO_DEPTH),
-    .B (T_W)
+tt_fifo #(
+    .N          (FIFO_DEP)  ,
+    .N_W        (DEP_W)   ,  
+    .B          (T_W)
 ) data_fifo (
     .rstn   (rst_ni),
     .clk    (clk_i),
@@ -142,15 +150,31 @@ fifo #(
     .din    (toa_dt),
     .rd_en  (read_toa),
     .dout   (fifo_out),
+    .d_count(fifo_count),
     .empty  (fifo_empty)
 );
+
 
 
 //////////////////////////////////////////////////////////////////////////////
 // Status Register
 //////////////////////////////////////////////////////////////////////////////
 
-// Add a counter for fifo to stream out the number of values (Shouldn't be hard in hdl)
+always_ff @(posedge clk_i, rst_ni) begin
+    if (!rst_ni) begin
+        status <= 0;
+    end
+    else begin
+        if (read_toa) begin
+            if ( fifo_empty ) begin
+                status[ERR_W+N_W-1:N_W] = `EMPTY_ERR;
+            end
+            else begin
+                status[N_W-1:0] <= fifo_count;
+            end
+        end
+    end
+end
 
 
 

@@ -21,8 +21,8 @@ module acq_dtp #(
     parameter N_S       =    8,
     parameter RES       =   12,
     parameter T_W       =   32, // Concatenated total experimental time
-    parameter DTR_RST   =   10, // Clock Cycles: 10 * (1/350e6) = Detector Reset Time
-)
+    parameter DTR_RST   =   10 // Clock Cycles: 10 * (1/350e6) = Detector Reset Time
+) (
     // System Inputs
     input   wire                        clk_i       ,
     input   wire                        rst_ni      ,

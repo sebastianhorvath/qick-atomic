@@ -19,9 +19,7 @@
     
 */
 //////////////////////////////////////////////////////////////////////////////
-`define ARM_CMD 1
-`define DISARM_CMD 2
-`define READOUT_CMD 3
+`include "../headers/cmd_err.svh"
 
 module tt_qcom #(
     parameter T_W = 32
@@ -36,7 +34,7 @@ module tt_qcom #(
 // Timing Inputs
     input wire [47:0]       qp_time       ,
 // Internal Outputs -> Inputs
-    input wire [31:0]       fifo_out      , //-> registered output
+    input wire [31:0]       fifo_in      , //-> registered output
     input wire [31:0]       status        , //-> potentially status register
     input wire              fifo_empty    ,
 // Outputs to Time Tagger Controllers
@@ -111,7 +109,7 @@ end
 // Output FSM 
 /////////////////////////////////////////////////////////////////////////////////
 
-assign qp_dt1_o = fifo_out; //The assignment is fine because of the valid signal sent to tproc
+assign qp_dt1_o = fifo_in; //The assignment is fine because of the valid signal sent to tproc
 
 reg [1:0] out_state;
 localparam IDLE = 2'b0, POP  = 2'b1, READ = 2'b10;
@@ -122,6 +120,7 @@ always @ (posedge clk_i or negedge rst_ni ) begin
     if (!rst_ni) begin 
         out_state <= IDLE;
         read_toa <= 0;
+        qp_ready_i <= 1;
         qp_vld_o <= 0;
     end
     else begin 
@@ -131,6 +130,7 @@ always @ (posedge clk_i or negedge rst_ni ) begin
                     // read_toa State Signals
                     read_toa <= 1;
                     out_state <= POP;
+                    qp_ready_i <= 0;
                 end
             end
             // One clk_cycle of downtime before reading a new signal 
@@ -139,10 +139,11 @@ always @ (posedge clk_i or negedge rst_ni ) begin
                 // READ State Signals
                 qp_vld_o <= 1;
                 read_toa <= 0;
+                qp_ready_i <= 1;
             end
             // Programmer is responsible for not overwriting values
             // Valid Signal is Set 
-            // Data is available from FIFO via fifo_out
+            // Data is available from FIFO via fifo_in
             // Pop is not asserted in this state 
             // Either go back to the idle state
             READ: begin

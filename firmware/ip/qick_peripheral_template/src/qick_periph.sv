@@ -11,6 +11,11 @@
     Eventually name this time tagger top 
 */
 //////////////////////////////////////////////////////////////////////////////
+
+`define ARM_CMD 1
+`define DISARM_CMD 2
+`define READ_CMD 3
+
 module qick_periph #(
    parameter DT_W       =  16 ,
    parameter FIFO_DEP   = 128 ,
@@ -62,6 +67,7 @@ module qick_periph #(
 // DEBUG   
    output wire [31:0]      qp_do     );
 
+wire [T_W-1:0] curr_time;
 
 //Axi Stream Handling
 assign qp_tready = 1;
@@ -116,51 +122,58 @@ always_ff @ (posedge clk_i, negedge rst_ni) begin
       c_dt2_r     <= qp_dt1_i;
    end
 end
-
-
-///////////////////////////////////////////////////////////////////////////////
-// ASYNCHONOUS INPUT SYNCRONIZATION
-///////////////////////////////////////////////////////////////////////////////
-
-// Using Axis Stream Signals instead
-// wire  qp_signal_r;
-// sync_reg # (
-//    .DW ( 1 )
-// ) sg_sync (
-//    .dt_i      ( qp_signal_i    ) ,
-//    .clk_i     ( clk_i    ) ,
-//    .rst_ni    ( rst_ni   ) ,
-//    .dt_o      ( qp_signal_r   ) );
-
-// wire [31:0] qp_vector_r;
-// sync_reg # (
-//    .DW ( 32 )
-// ) vec_sync (
-//    .dt_i      ( qp_vector_i    ) ,
-//    .clk_i     ( clk_i    ) ,
-//    .rst_ni    ( rst_ni   ) ,
-//    .dt_o      ( qp_vector_r   ) );
    
 ///////////////////////////////////////////////////////////////////////////////
-// PERIPHERAL PROCESSING
+// Communication for ZYNQ (AXI)
 ///////////////////////////////////////////////////////////////////////////////
 wire xreg_QP_DT1 = AXI_DT1 ;
 wire xreg_QP_DT2 = AXI_DT2 ;
 wire xreg_QP_DT3 = AXI_DT3 ;
 wire xreg_QP_DT4 = AXI_DT4 ;
 
+reg axi_arm;
+wire axi_fifo_empty, axi_read_toa;
+wire [31:0] axi_toa_dt, axi_tt_status;
+reg [T_W-1:0] axi_start_time; // Start time for the data acquistion 
+
+always_ff @ (posedge clk_i, negedge rst_ni) begin
+   if (!rst_ni) begin
+      axi_arm <= 0;
+   end 
+   else begin
+      if ((axi_arm == 1) & (axi_start_time == curr_time)) begin
+         axi_arm <= 0;
+      end
+      else begin
+         case (c_op_r)
+            `ARM_CMD: begin
+               axi_arm <= 1;
+               axi_start_time <= qp_time;
+            end
+            `DISARM_CMD: begin
+               axi_arm <= 0;
+            end
+            `READ_CMD: begin
+               // Handle Error Message inside the Time Tagger Module
+               axi_read_toa <= 1;
+            end
+         endcase
+      end
+   end
+end
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// INTERFACE FOR TIME TAGGER
+// INTERFACE FOR Tproc Communication (QP)
 ///////////////////////////////////////////////////////////////////////////////
-wire [31:0] fifo_out, status;
-wire fifo_empty;
-wire arm, read_toa;
-wire [T_W-1:0] start_time, curr_time;       
+wire qp_fifo_empty;
+wire qp_arm, qp_read_toa;
+wire [T_W-1:0] qp_start_time; 
+wire [31:0] qp_fifo_in, qp_tt_status;    
 
 
-qick_tt_intf #(
+tt_qcom #(
    .T_W           (T_W)
 ) photon_time_to_qick (
    .clk_i         (clk_i)        ,
@@ -172,14 +185,14 @@ qick_tt_intf #(
 
    .qp_time       (qp_time)      ,
 
-   .fifo_out      (fifo_out)     , // Input Time Tagger
-   .status        (status)       , // Input Time Tagger
-   .fifo_empty    (fifo_empty)   ,
+   .fifo_in       (qp_fifo_in)   , // Input Time Tagger
+   .status        (qp_tt_status) , // Input Time Tagger
+   .fifo_empty    (qp_fifo_empty),
 
-   .arm           (arm)          , // Output to Time Tagger
-   .start_time    (start_time)   , // Output to Time Tagger
-   .curr_time     (curr_time)    , // Output to Time Tagger
-   .read_toa      (read_toa)     , // Output to Time Tagger
+   .arm           (qp_arm)        , // Output to Time Tagger
+   .start_time    (qp_start_time) , // Output to Time Tagger
+   .curr_time     (curr_time)     , // Always displays time
+   .read_toa      (qp_read_toa)   , // Output to Time Tagger
 
    .qp_ready_i    (qp_rdy_o)     , 
    .qp_vld_i      (qp_vld_o)     ,
@@ -187,6 +200,28 @@ qick_tt_intf #(
    .qp_dt1_o      (qp_dt1_o)     
 );
 
+///////////////////////////////////////////////////////////////////////////////
+// Muxing / Demuxing between ZYNQ and Trpoc
+///////////////////////////////////////////////////////////////////////////////
+wire [31:0] tt_fifo_out, tt_status;
+wire tt_fifo_empty;
+
+// Arming and Start Time determined by if AXI or not
+wire tt_arm = QP_CFG[7] ? axi_arm : qp_arm;
+wire [T_W-1:0] tt_start_time = QP_CFG[7] ? axi_start : qp_start_time; 
+
+wire [31:0] toa_dt;
+wire tt_read_toa = QP_CFG[7] ? axi_read_toa : qp_read_toa;
+
+// Tproc Multiplexing
+assign qp_fifo_in = ( !QP_CFG[7] ) ? tt_fifo_out : '0;
+assign qp_tt_status = ( !QP_CFG[7] ) ? tt_status : '0; 
+assign qp_fifo_empty = ( !QP_CFG[7] ) ? tt_fifo_empty : 1'b1;
+
+// Axi Multiplexing
+assign axi_toa_dt = QP_CFG[7] ? tt_fifo_out : '0;
+assign axi_tt_status = QP_CFG[7] ? tt_status : '0;
+assign axi_fifo_empty = QP_CFG[7] ? tt_fifo_empty : 1'b1;
 
 ///////////////////////////////////////////////////////////////////////////////
 // TAGGER
@@ -205,14 +240,14 @@ time_tagger #(
    .tdata            (tdata)           ,
    .threshold        (QP_THRES)        ,   // Add this to the AXI Register Addressing
 
-   .arm              (arm)             ,   // From Interface
-   .start_time       (start_time)      ,   // From Interface
+   .arm              (tt_arm)          ,   // From Interface
+   .start_time       (tt_start_time)   ,   // From Interface
    .curr_time        (curr_time)       ,
-   .read_toa         (read_toa)        ,   // From Interface
+   .read_toa         (tt_read_toa)     ,
 
-   .fifo_out         (fifo_out)        ,   // To Interface 
-   .status           (status)          ,   // To Interface
-   .fifo_empty       (fifo_empty)          // To Interface
+   .fifo_out         (tt_fifo_out)     ,   // From Interface
+   .status           (tt_status)       ,   // To Interface
+   .fifo_empty       (tt_fifo_empty)          // To Interface
 );
 
 
@@ -221,9 +256,10 @@ time_tagger #(
 // OUTPUTS
 ///////////////////////////////////////////////////////////////////////////////
 
+
 // AXI REGISTERS
-assign   QP_DT1      = xreg_QP_DT1 ;
-assign   QP_DT2      = xreg_QP_DT2 ;
+assign   QP_DT1      = axi_toa_dt ;
+assign   QP_DT2      = axi_tt_status ;
 assign   QP_DT3      = xreg_QP_DT3 ;
 assign   QP_DT4      = xreg_QP_DT4 ;
 assign   QP_STATUS   = 0 ;
