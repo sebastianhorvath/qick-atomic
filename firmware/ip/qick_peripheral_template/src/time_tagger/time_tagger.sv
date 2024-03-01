@@ -19,8 +19,7 @@
     Inputs: 
 
         clk_i, rst_ni
-        arm 
-        start_time 
+        arm  
         read_time 
 
     Outputs: 
@@ -47,29 +46,22 @@ module time_tagger #(
     input   wire                        rst_ni      ,
     // Axis Stream Signals
     input   wire      [N_S*DT_W-1:0]    tdata       ,
+    // DMA AXI Stream 
     // Axi Registers 
     input   wire        [31:0]          threshold   ,
     // Inputs from the Interface
     input wire                          arm         ,
-    input wire          [T_W-1:0]       start_time  ,
-    input wire          [T_W-1:0]       curr_time   ,
     input wire                          read_toa    , // connect to interface pop
     // Outputs to the Interface
     output reg          [31:0]          fifo_out    ,
     output reg          [31:0]          status      , 
     output reg                          fifo_empty
-
 );
-
 localparam int ERR_W = 3;
-
 
 wire triggered;
 wire store_rdy, store_en;
-wire wake_up;
-wire asleep;
-wire acq_en;
-wire toa_wren;
+wire acq_en, wake_up, asleep, dead, toa_wren;
 
 wire [31:0] toa_dt;
 
@@ -77,31 +69,23 @@ wire [31:0] toa_dt;
 // Acquistion Control
 ///////////////////////////////////////////////////////////////////////////////
 
-
 acq_ctrl #(
 
 ) tagger_ctrl (
-    // System Inputs
     .clk_i          (clk_i)             ,
     .rst_ni         (rst_ni)            ,
-    // Input from Interface
     .armed          (arm)               ,
-    // Inputs from Datapath
     .triggered      (triggered)         ,
     .store_rdy      (store_rdy)         ,
     .wake_up        (wake_up)           ,
-    // Outputs to Datapath
     .acq_en         (acq_en)            ,
     .asleep         (asleep)            ,
-    // FIFO Control
     .store_en       (store_en)          
 );
 
 ///////////////////////////////////////////////////////////////////////////////
 // Acqusition Datapath
 ///////////////////////////////////////////////////////////////////////////////
-
-// Make Sure we only take the top bottom 12 bits of Threshold 
 
 acq_dtp #(
     .DT_W       (DT_W)      ,
@@ -110,24 +94,17 @@ acq_dtp #(
     .RES        (RES)       ,
     .DTR_RST    (DTR_RST)     
 ) tagger_dtp (
-    // System Inputs
     .clk_i              (clk_i)             ,
     .rst_ni             (rst_ni)            ,
-    // Axis Stream inputs
     .data_v             (tdata)             ,
-    
-    .start_time         (start_time)        ,
-    .curr_time          (curr_time)         ,
-
+    .armed              (arm)               ,
     .acq_en             (acq_en)            ,
     .store_en           (store_en)          ,
     .asleep             (asleep)            ,
     .threshold          (threshold[RES-1:0]),
-
     .triggered          (triggered)         ,
     .store_rdy          (store_rdy)         ,
     .wake_up            (wake_up)           ,
-
     .toa_dt             (toa_dt)
 );
 
@@ -136,13 +113,14 @@ acq_dtp #(
 ///////////////////////////////////////////////////////////////////////////////
 localparam int DEP_W = $clog2(FIFO_DEP);
 
-wire [31:0] fifo_count; 
+wire [DEP_W-1:0] fifo_count; 
+
 assign toa_wren = store_rdy & store_en;
 
 tt_fifo #(
     .N          (FIFO_DEP)  ,
     .N_W        (DEP_W)   ,  
-    .B          (T_W)
+    .B          (32)
 ) data_fifo (
     .rstn   (rst_ni),
     .clk    (clk_i),
@@ -154,31 +132,22 @@ tt_fifo #(
     .empty  (fifo_empty)
 );
 
-
-
 //////////////////////////////////////////////////////////////////////////////
 // Status Register
 //////////////////////////////////////////////////////////////////////////////
 
 always_ff @(posedge clk_i, rst_ni) begin
-    if (!rst_ni) begin
-        status <= 0;
-    end
+    if (!rst_ni) status <= 0;
     else begin
         if (read_toa) begin
-            if ( fifo_empty ) begin
-                status[ERR_W+N_W-1:N_W] = `EMPTY_ERR;
-            end
-            else begin
-                status[N_W-1:0] <= fifo_count;
-            end
+            if ( fifo_empty )  status[ERR_W+DEP_W-1:DEP_W] = `EMPTY_ERR;
+            else status[DEP_W-1:0] <= (fifo_count - 1'b1); // always 1 less because just read value
         end
     end
 end
 
 
-
-
+// time tagger -> fifo -> DMA_ctrl -> AXI_DMA
 
 
 endmodule 

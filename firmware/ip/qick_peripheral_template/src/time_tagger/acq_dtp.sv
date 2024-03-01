@@ -31,73 +31,80 @@ module acq_dtp #(
     // Axis Registers
     // input   wire      [31:0]            qp_delay    ,
     // input   wire      [31:0]            qp_frac     ,
-    // Input from Interface 
-    input   wire      [T_W-1:0]         start_time  ,
-    input   wire      [T_W-1:0]         curr_time   ,
     // Inputs from Control
+    input   wire                        armed       ,
     input   wire                        acq_en      ,
     input   wire                        store_en    ,
     input   wire                        asleep      ,
     input   wire      [RES-1:0]         threshold   ,                 
     // Outputs to Control
-    output  reg                         triggered   ,
+    output  wire                        triggered   ,
     output  reg                         store_rdy   , // Calculated the value to store
     output  wire                        wake_up     ,
     // FIFO Outputs
-    output  reg        [T_W-1:0]        toa_dt      
+    output  wire      [31:0]            toa_dt      
 );
 
 localparam int N_B = $clog2(N_S);
-
 wire [N_S-1:0] edge_index;
+wire above_thresh, below_thresh;
+reg alr_trig;
 
+/////////////////////////////////////////////////////////////////////////////
+// Time Counter
+/////////////////////////////////////////////////////////////////////////////
+reg [T_W-1:0] tt_curr_time;
+
+always_ff @(posedge clk_i, negedge rst_ni) begin
+     if (!rst_ni) tt_curr_time <= 0;
+     else begin
+        if (armed) tt_curr_time <= tt_curr_time + 1'b1;
+        else tt_curr_time <= 0;
+     end
+end
 /////////////////////////////////////////////////////////////////////////////
 // Storing the Trigger Time (Prevents effects from latency)
 /////////////////////////////////////////////////////////////////////////////
-
 reg [T_W-1:0] trig_time;
+assign triggered = above_thresh & !alr_trig;
 
 always_ff @(posedge clk_i, negedge rst_ni) begin
     if (!rst_ni) begin
         trig_time <= 0;
+        alr_trig <= 0;
     end
     else begin
-        // Store the time that we triggered on to store for the storage stage
-        if (triggered) begin
-            trig_time <= curr_time;
+        if (triggered && acq_en) begin
+            trig_time <= tt_curr_time;
+            alr_trig <= 1;
         end
+        // If already triggered wait until below threshold to reallow a trigger
+        if (alr_trig & below_thresh) alr_trig <= 0;
     end
 end
-
 
 //////////////////////////////////////////////////////////////////////////////
 // Dead Time counter 
 //////////////////////////////////////////////////////////////////////////////
 localparam int DEAD_W = $clog2(DTR_RST);
-
 reg [DEAD_W-1:0] dead_time;
+assign wake_up = (dead_time == 1);
 
-assign wake_up = (dead_time == 0);
-
+// Counter doesn't stop until = 0
 always_ff @(posedge clk_i, negedge rst_ni) begin
-    if (!rst_ni) begin
-        dead_time <= DTR_RST;
-    end 
+    if (!rst_ni) dead_time <= DTR_RST;
     else begin 
-        if (asleep) begin
+        if (asleep) begin 
             dead_time <= dead_time - 1; 
-        end 
-        else begin
-            dead_time <= DTR_RST;
+            if (wake_up) dead_time <= DTR_RST;
         end
+        else dead_time <= DTR_RST;
     end
 end
-
 
 //////////////////////////////////////////////////////////////////////////////
 // Edge Detector (Can Replace with the Constant Fraction Discrimination)
 //////////////////////////////////////////////////////////////////////////////
-
 edge_detect #(
     .DT_W       (DT_W)  ,
     .N_S        (N_S)   ,
@@ -105,20 +112,20 @@ edge_detect #(
 ) photon_arrival (
     .clk_i             (clk_i)      ,
     .rst_ni            (rst_ni)     ,
-
     .data_v            (data_v)     ,
-    
     .acq_en            (acq_en)     ,
     .threshold         (threshold)  ,
-
-    .triggered         (triggered)  ,
-    .edge_index        (edge_index) ,
+    .above_thresh      (above_thresh),
+    .below_thresh      (below_thresh),
+    .edge_index        (edge_index) 
 );
 
 //////////////////////////////////////////////////////////////////////////////
 // Edge Detection Interpolation 
 //////////////////////////////////////////////////////////////////////////////
-
+localparam int TOA_W = N_B+T_W;
+wire [(TOA_W-1):0] part_toa_dt;
+assign toa_dt = {{(32 - TOA_W){1'b0}}, part_toa_dt};
 
 t_interpolate #(
     .T_W        (T_W)   ,
@@ -127,16 +134,11 @@ t_interpolate #(
 ) precise_time (
     .clk_i          (clk_i)         ,
     .rst_ni         (rst_ni)        ,
-
     .trig_time      (trig_time)     ,
-
     .store_en       (store_en)      ,
     .edge_index     (edge_index)    ,
-
     .store_rdy      (store_rdy)     ,
-    .edge_time      (toa_dt)        ,
+    .edge_time      (part_toa_dt)        
 );
-
-
 
 endmodule

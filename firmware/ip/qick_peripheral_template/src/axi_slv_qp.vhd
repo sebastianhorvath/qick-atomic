@@ -50,7 +50,6 @@ entity axi_slv_qp is
      QP_DT2        : in  std_logic_vector (31 downto 0) ;
      QP_DT3        : in  std_logic_vector (31 downto 0) ;
      QP_DT4        : in  std_logic_vector (31 downto 0) ;
-	 QP_DELAY	   : in  std_logic_vector (31 downto 0) ;
      QP_DEBUG      : in  std_logic_vector (31 downto 0) );
 end axi_slv_qp;
 

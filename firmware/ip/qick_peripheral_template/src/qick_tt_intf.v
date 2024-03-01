@@ -6,16 +6,7 @@
 //  Version        : 1
 ///////////////////////////////////////////////////////////////////////////////
 //  QICK PROCESSOR :  Time Tagger Peripheral QPROC Communication 
-/* Description: 
-    Wrapper for handling the QPROC communication 
-
-    Acquisiton Commands :
-    Start - Give the start time 
-    Stop - instantly triggers the stop 
-
-    Read Commands :
-    Pop - After the previous values have been read, pop them from fifo
-
+/*
     
 */
 //////////////////////////////////////////////////////////////////////////////
@@ -31,23 +22,19 @@ module tt_qcom #(
     input wire              qp_en_i       ,
     input wire [4:0]        qp_op_i       ,
     input wire [31:0]       qp_dt1_i      , // Add the ability to 
-// Timing Inputs
-    input wire [47:0]       qp_time       ,
 // Internal Outputs -> Inputs
-    input wire [31:0]       fifo_in      , //-> registered output
+    input wire [31:0]       fifo_in       , //-> registered output
     input wire [31:0]       status        , //-> potentially status register
     input wire              fifo_empty    ,
 // Outputs to Time Tagger Controllers
-    output reg              arm           ,
-    output reg [T_W-1:0]    start_time    ,
-    output reg [T_W-1:0]    curr_time     ,
+    output reg              armed         ,
     output reg              read_toa      , //read time tagger 
 // Outputs to QPROC  
     output reg              qp_ready_i    , 
     output reg              qp_vld_o      ,
     output wire             qp_flag       ,
     output wire [31:0]      qp_dt1_o      ,
-    output reg [31:0]       qp_dt2_o
+    output wire [31:0]      qp_dt2_o
 );
 
 // Handshake Signal 
@@ -56,41 +43,23 @@ wire handshake = qp_ready_i & qp_en_i;
 // Flag exactly not fifo_empty
 assign qp_flag = ~fifo_empty;
 
-// Clock Register
-reg [T_W-1:0] tagger_time;
-always @(posedge clk_i) begin
-    tagger_time <= qp_time[T_W-1:0];
-end 
-
 /////////////////////////////////////////////////////////////////////////////////
 // Input FSM 
 /////////////////////////////////////////////////////////////////////////////////
-
-// Output Signals
-reg armed; 
-reg start_t;
-
-// State Vector 
-reg input_state; 
-
-// State Params
 localparam DISARMED = 1'b0,
            ARMED = 1'b1;
 
+reg input_state; 
 
 // One Sequential Logic FSM (Two State Machine)
 always @ (posedge clk_i or negedge rst_ni)  begin 
     // Starting State is DISARMED
-    if (!rst_ni) begin 
-        input_state <= DISARMED;
-        start_t <= 0;
-    end
+    if (!rst_ni) input_state <= DISARMED;
     else begin 
         case(input_state)
             DISARMED: begin
                 if ((qp_op_i == `ARM_CMD) && handshake) begin 
                     armed <= 1;
-                    start_t <= tagger_time;
                     input_state <= ARMED;
                 end
             end
@@ -100,7 +69,6 @@ always @ (posedge clk_i or negedge rst_ni)  begin
                     input_state <= DISARMED;
                 end
             end 
-        
         endcase 
     end
 end
@@ -110,13 +78,14 @@ end
 /////////////////////////////////////////////////////////////////////////////////
 
 assign qp_dt1_o = fifo_in; //The assignment is fine because of the valid signal sent to tproc
+assign qp_dt2_o = status;
+
+localparam IDLE = 2'b0, POP  = 2'b1, READ = 2'b10;
 
 reg [1:0] out_state;
-localparam IDLE = 2'b0, POP  = 2'b1, READ = 2'b10;
 
 always @ (posedge clk_i or negedge rst_ni ) begin
     // Don't need initial values because they are flip flops 
-
     if (!rst_ni) begin 
         out_state <= IDLE;
         read_toa <= 0;
@@ -133,38 +102,25 @@ always @ (posedge clk_i or negedge rst_ni ) begin
                     qp_ready_i <= 0;
                 end
             end
-            // One clk_cycle of downtime before reading a new signal 
+            // Change Design after confirmed working
+            // Needs to arm even if in POP state
             POP: begin
                 out_state <= READ;
-                // READ State Signals
                 qp_vld_o <= 1;
-                read_toa <= 0;
                 qp_ready_i <= 1;
+                read_toa <= 0;
             end
-            // Programmer is responsible for not overwriting values
-            // Valid Signal is Set 
-            // Data is available from FIFO via fifo_in
-            // Pop is not asserted in this state 
-            // Either go back to the idle state
             READ: begin
                 qp_vld_o <= 0;
                 if (qp_op_i == `READOUT_CMD && !fifo_empty) begin
-                    // POP State Signals
                     read_toa <= 1;
                     out_state <= POP;
+                    qp_ready_i <= 0;
                 end 
-                else begin 
-                    out_state <= IDLE;
-                end
+                else out_state <= IDLE;
             end
         endcase 
     end 
 end
-
-
-
-/////////////////////////////////////////////////////////////////////////////////
-
-
 
 endmodule

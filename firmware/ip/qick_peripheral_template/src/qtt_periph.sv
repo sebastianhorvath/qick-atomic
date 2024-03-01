@@ -16,7 +16,7 @@
 `define DISARM_CMD 2
 `define READ_CMD 3
 
-module qick_periph #(
+module qtt_periph #(
    parameter DT_W       =  16 ,
    parameter FIFO_DEP   = 128 ,
    parameter T_W        =  32 ,   // Length of the photon detection cd experiment = 2^32
@@ -59,11 +59,7 @@ module qick_periph #(
    output reg   [31:0]     QP_STATUS   ,
    output reg   [31:0]     QP_DEBUG    ,
 // INPUTS 
-   input  wire             qp_signal_i ,
    input  wire  [47:0]     qp_time     , 
-// OUTPUTS
-   output reg              qp_signal_o ,
-   output reg   [31:0]     qp_vector_o ,
 // DEBUG   
    output wire [31:0]      qp_do     );
 
@@ -183,15 +179,11 @@ tt_qcom #(
    .qp_op_i       (qp_op_i)      ,
    .qp_dt1_i      (qp_dt1_i)     ,
 
-   .qp_time       (qp_time)      ,
-
    .fifo_in       (qp_fifo_in)   , // Input Time Tagger
    .status        (qp_tt_status) , // Input Time Tagger
    .fifo_empty    (qp_fifo_empty),
 
-   .arm           (qp_arm)        , // Output to Time Tagger
-   .start_time    (qp_start_time) , // Output to Time Tagger
-   .curr_time     (curr_time)     , // Always displays time
+   .armed         (qp_arm)        , // Output to Time Tagger
    .read_toa      (qp_read_toa)   , // Output to Time Tagger
 
    .qp_ready_i    (qp_rdy_o)     , 
@@ -236,42 +228,24 @@ time_tagger #(
 ) photon_time (
    .clk_i            (clk_i)           ,
    .rst_ni           (rst_ni)          ,
-
    .tdata            (tdata)           ,
    .threshold        (QP_THRES)        ,   // Add this to the AXI Register Addressing
-
    .arm              (tt_arm)          ,   // From Interface
-   .start_time       (tt_start_time)   ,   // From Interface
-   .curr_time        (curr_time)       ,
    .read_toa         (tt_read_toa)     ,
-
    .fifo_out         (tt_fifo_out)     ,   // From Interface
    .status           (tt_status)       ,   // To Interface
    .fifo_empty       (tt_fifo_empty)          // To Interface
 );
 
-
-
 ///////////////////////////////////////////////////////////////////////////////
 // OUTPUTS
 ///////////////////////////////////////////////////////////////////////////////
 
-
 // AXI REGISTERS
 assign   QP_DT1      = axi_toa_dt ;
-assign   QP_DT2      = axi_tt_status ;
+assign   QP_DT2      = 0 ;
 assign   QP_DT3      = xreg_QP_DT3 ;
 assign   QP_DT4      = xreg_QP_DT4 ;
-assign   QP_STATUS   = 0 ;
-
-// REGISTERES OUTs
-always_ff @ (posedge clk_i, negedge rst_ni) begin
-   if (!rst_ni) begin
-      qp_signal_o       <= 1'b0;
-   end else begin
-      qp_signal_o       <= qp_signal_r;
-      qp_vector_o       <= qp_vector_r;
-   end
-end
+assign   QP_STATUS   = axi_tt_status ;
 
 endmodule
