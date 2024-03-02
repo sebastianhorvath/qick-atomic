@@ -11,10 +11,7 @@
     Eventually name this time tagger top 
 */
 //////////////////////////////////////////////////////////////////////////////
-
-`define ARM_CMD 1
-`define DISARM_CMD 2
-`define READ_CMD 3
+`include "../headers/cmd_err.svh"
 
 module qtt_periph #(
    parameter DT_W       =  16 ,
@@ -29,10 +26,6 @@ module qtt_periph #(
 // QPERIPH INTERFACE
    input  wire             qp_en_i     , //
    input  wire  [ 4:0]     qp_op_i     , //
-   input  wire  [31:0]     qp_dt1_i    , //
-   input  wire  [31:0]     qp_dt2_i    , // 
-   input  wire  [31:0]     qp_dt3_i    , // 
-   input  wire  [31:0]     qp_dt4_i    , // 
    output reg              qp_rdy_o    , // 
    output reg   [31:0]     qp_dt1_o    , // 
    output reg   [31:0]     qp_dt2_o    , // 
@@ -72,11 +65,11 @@ wire [DT_W*N_S-1:0] tdata = qp_tvalid ? qp_vector_i : '0;
 ///////////////////////////////////////////////////////////////////////////////
 // Python Command SYNCRONIZATION
 ///////////////////////////////////////////////////////////////////////////////
-// Control Signal SYNC 
+// Control Signal SYNC (Three cycles guaranteed)
 wire [ 5:0] axi_ctrl ;
 sync_reg # (
    .DW ( 6 )
-)cmd_sync (
+) cmd_sync (
    .dt_i      ( QP_CTRL[5:0]    ) ,
    .clk_i     ( clk_i    ) ,
    .rst_ni    ( rst_ni   ) ,
@@ -90,7 +83,8 @@ always_ff @ (posedge clk_i, negedge rst_ni) begin
    if   (!rst_ni) p_cmd_in_r <= 1'b0; 
    else           p_cmd_in_r <= p_cmd_in;
 end
-//Single Pulse Control Signal
+
+// Single Pulse Control Signal
 wire p_cmd_in_t01 =  !p_cmd_in_r & p_cmd_in;
 
 
@@ -98,67 +92,71 @@ wire p_cmd_in_t01 =  !p_cmd_in_r & p_cmd_in;
 // Input Command and Data 
 ///////////////////////////////////////////////////////////////////////////////
 reg  [ 4:0] c_op_r ;
-reg  [31:0] c_dt1_r, c_dt2_r ;
+//reg  [31:0] c_dt1_r, c_dt2_r ;
 
 // REGISTERES INs
 always_ff @ (posedge clk_i, negedge rst_ni) begin
    if (!rst_ni) begin
       c_op_r      <= 1'b0;
-      c_dt1_r     <= '{default:'0} ;
-      c_dt2_r     <= '{default:'0} ;
    end else if (p_cmd_in_t01) begin
    // Command from Python Interface    
       c_op_r      <= axi_ctrl[5:1];
-      c_dt1_r     <= AXI_DT1;
-      c_dt2_r     <= AXI_DT2;
-   end else if (qp_en_i) begin
-   // Command from QPROC Interface    
-      c_op_r      <= qp_op_i[4:0];
-      c_dt1_r     <= qp_dt1_i;
-      c_dt2_r     <= qp_dt1_i;
+   end
+   else begin
+      c_op_r      <= 1'b0; 
    end
 end
    
 ///////////////////////////////////////////////////////////////////////////////
 // Communication for ZYNQ (AXI)
 ///////////////////////////////////////////////////////////////////////////////
-wire xreg_QP_DT1 = AXI_DT1 ;
-wire xreg_QP_DT2 = AXI_DT2 ;
-wire xreg_QP_DT3 = AXI_DT3 ;
-wire xreg_QP_DT4 = AXI_DT4 ;
 
 reg axi_arm;
-wire axi_fifo_empty, axi_read_toa;
+reg axi_read_toa;
+reg axi_valid, axi_next_valid;
+reg [1:0] axi_edge_count; 
+wire axi_fifo_empty;
 wire [31:0] axi_toa_dt, axi_tt_status;
 reg [T_W-1:0] axi_start_time; // Start time for the data acquistion 
 
 always_ff @ (posedge clk_i, negedge rst_ni) begin
    if (!rst_ni) begin
       axi_arm <= 0;
+      axi_read_toa <= 0;
+
    end 
    else begin
       if ((axi_arm == 1) & (axi_start_time == curr_time)) begin
          axi_arm <= 0;
+         axi_start_time <= 0;
       end
       else begin
-         case (c_op_r)
+         case (c_op_r) // Commands are pulsed
             `ARM_CMD: begin
                axi_arm <= 1;
                axi_start_time <= qp_time;
+               axi_edge_count <= 0;
             end
             `DISARM_CMD: begin
                axi_arm <= 0;
+               axi_start_time <= 0;
             end
-            `READ_CMD: begin
-               // Handle Error Message inside the Time Tagger Module
+            `READOUT_CMD: begin
                axi_read_toa <= 1;
+               if (!axi_fifo_empty) begin
+                  axi_next_valid <= 1; 
+               end
+            end
+            default: begin
+               axi_read_toa <= 0; 
+               axi_next_valid <= 0;
+               axi_valid <= axi_next_valid;
+               axi_edge_count <= axi_valid ? axi_edge_count+1 : axi_edge_count;
             end
          endcase
       end
    end
 end
-
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // INTERFACE FOR Tproc Communication (QP)
@@ -168,7 +166,6 @@ wire qp_arm, qp_read_toa;
 wire [T_W-1:0] qp_start_time; 
 wire [31:0] qp_fifo_in, qp_tt_status;    
 
-
 tt_qcom #(
    .T_W           (T_W)
 ) photon_time_to_qick (
@@ -177,7 +174,6 @@ tt_qcom #(
 
    .qp_en_i       (qp_en_i)      ,
    .qp_op_i       (qp_op_i)      ,
-   .qp_dt1_i      (qp_dt1_i)     ,
 
    .fifo_in       (qp_fifo_in)   , // Input Time Tagger
    .status        (qp_tt_status) , // Input Time Tagger
@@ -187,9 +183,10 @@ tt_qcom #(
    .read_toa      (qp_read_toa)   , // Output to Time Tagger
 
    .qp_ready_i    (qp_rdy_o)     , 
-   .qp_vld_i      (qp_vld_o)     ,
+   .qp_vld_o      (qp_vld_o)     ,
    .qp_flag       (qp_flag_o)    ,
-   .qp_dt1_o      (qp_dt1_o)     
+   .qp_dt1_o      (qp_dt1_o)     ,
+   .qp_dt2_o      (qp_dt2_o)
 );
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -200,7 +197,6 @@ wire tt_fifo_empty;
 
 // Arming and Start Time determined by if AXI or not
 wire tt_arm = QP_CFG[7] ? axi_arm : qp_arm;
-wire [T_W-1:0] tt_start_time = QP_CFG[7] ? axi_start : qp_start_time; 
 
 wire [31:0] toa_dt;
 wire tt_read_toa = QP_CFG[7] ? axi_read_toa : qp_read_toa;
@@ -242,10 +238,27 @@ time_tagger #(
 ///////////////////////////////////////////////////////////////////////////////
 
 // AXI REGISTERS
-assign   QP_DT1      = axi_toa_dt ;
-assign   QP_DT2      = 0 ;
-assign   QP_DT3      = xreg_QP_DT3 ;
-assign   QP_DT4      = xreg_QP_DT4 ;
-assign   QP_STATUS   = axi_tt_status ;
+always_ff @ (posedge clk_i, negedge rst_ni) begin
+   if (!rst_ni) begin
+      QP_DT1 <= 0;
+      QP_DT2 <= 0;
+      QP_DT3 <= 0;
+      QP_DT4 <= 0; 
+   end
+   else begin
+   // Loading values into respective data slots (1 if occured first)
+   // Allows for 4 time stamps in axi registers at once
+      if (axi_valid) begin
+         case (axi_edge_count)
+               2'b00: QP_DT1 <= axi_toa_dt;
+               2'b01: QP_DT2 <= axi_toa_dt;
+               2'b10: QP_DT3 <= axi_toa_dt;
+               2'b11: QP_DT4 <= axi_toa_dt;
+         endcase
+
+         QP_STATUS <= axi_tt_status;
+      end
+   end
+end
 
 endmodule

@@ -123,7 +123,7 @@ axi_slv_qp # (
    .QP_DEBUG   ( r_qp_debug         ) );
 
 wire [31:0] qp_do_s;
-qick_periph  # (
+qtt_periph  # (
    .PARAM     ( 1 )
 ) QP (
    .clk_i      ( c_clk     ) ,

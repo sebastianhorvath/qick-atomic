@@ -21,7 +21,6 @@ module tt_qcom #(
 // QPERIPH INPUT
     input wire              qp_en_i       ,
     input wire [4:0]        qp_op_i       ,
-    input wire [31:0]       qp_dt1_i      , // Add the ability to 
 // Internal Outputs -> Inputs
     input wire [31:0]       fifo_in       , //-> registered output
     input wire [31:0]       status        , //-> potentially status register
