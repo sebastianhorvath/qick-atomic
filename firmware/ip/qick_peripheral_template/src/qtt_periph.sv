@@ -15,9 +15,9 @@
 
 module qtt_periph #(
    parameter DT_W       =  16 ,
-   parameter FIFO_DEP   = 128 ,
-   parameter T_W        =  32 ,   // Length of the photon detection cd experiment = 2^32
    parameter N_S        =   8 ,
+   parameter T_W        =  32 , 
+   parameter FIFO_W    =    7 ,
    parameter DTR_RST    =  10     //Clock Cycles    
 ) (
 // Core CLK & RST
@@ -33,8 +33,8 @@ module qtt_periph #(
    output reg              qp_flag_o   , // 
 // Axis Stream Signals
    input  wire  [N_S*DT_W-1:0] qp_vector_i ,
-   output wire             qp_tready   ,
    input  wire             qp_tvalid   ,
+   output wire             qp_tready   ,
 // AXI REG
    input  wire  [ 7:0]     QP_CTRL     ,
    input  wire  [ 7:0]     QP_CFG      ,
@@ -216,10 +216,10 @@ assign axi_fifo_empty = QP_CFG[7] ? tt_fifo_empty : 1'b1;
 ///////////////////////////////////////////////////////////////////////////////
 
 time_tagger #(
-   .FIFO_DEP         (FIFO_DEP)        ,
-   .T_W              (T_W)             ,
    .DT_W             (DT_W)            ,
    .N_S              (N_S)             ,
+   .T_W              (T_W)             ,
+   .FIFO_W           (FIFO_W)          ,
    .DTR_RST          (DTR_RST)      
 ) photon_time (
    .clk_i            (clk_i)           ,

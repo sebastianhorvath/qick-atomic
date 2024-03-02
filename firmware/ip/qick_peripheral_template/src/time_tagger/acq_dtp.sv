@@ -19,24 +19,24 @@ module acq_dtp #(
     // Parameters 
     parameter DT_W      =   16,
     parameter N_S       =    8,
-    parameter RES       =   12,
-    parameter T_W       =   32, // Concatenated total experimental time
-    parameter DTR_RST   =   10 // Clock Cycles: 10 * (1/350e6) = Detector Reset Time
+    parameter T_W       =   32, 
+    parameter DTR_RST   =   10,
+    parameter RES       =   12
 ) (
     // System Inputs
     input   wire                        clk_i       ,
     input   wire                        rst_ni      ,
     // Axis Stream Signals
-    input   wire      [N_S*DT_W-1:0]    data_v      ,
+    input   wire      [N_S*DT_W-1:0]    tdata       ,
     // Axis Registers
     // input   wire      [31:0]            qp_delay    ,
     // input   wire      [31:0]            qp_frac     ,
+    input   wire      [RES-1:0]         qp_threshold, 
     // Inputs from Control
     input   wire                        armed       ,
     input   wire                        acq_en      ,
     input   wire                        store_en    ,
-    input   wire                        asleep      ,
-    input   wire      [RES-1:0]         threshold   ,                 
+    input   wire                        asleep      ,                
     // Outputs to Control
     output  wire                        triggered   ,
     output  reg                         store_rdy   , // Calculated the value to store
@@ -45,7 +45,6 @@ module acq_dtp #(
     output  wire      [31:0]            toa_dt      
 );
 
-localparam int N_B = $clog2(N_S);
 wire [N_S-1:0] edge_index;
 wire above_thresh, below_thresh;
 reg alr_trig;
@@ -112,9 +111,9 @@ edge_detect #(
 ) photon_arrival (
     .clk_i             (clk_i)      ,
     .rst_ni            (rst_ni)     ,
-    .data_v            (data_v)     ,
+    .tdata             (tdata)      ,
     .acq_en            (acq_en)     ,
-    .threshold         (threshold)  ,
+    .threshold         (qp_threshold),
     .above_thresh      (above_thresh),
     .below_thresh      (below_thresh),
     .edge_index        (edge_index) 
@@ -123,6 +122,7 @@ edge_detect #(
 //////////////////////////////////////////////////////////////////////////////
 // Edge Detection Interpolation 
 //////////////////////////////////////////////////////////////////////////////
+localparam int N_B = $clog2(N_S);
 localparam int TOA_W = N_B+T_W;
 wire [(TOA_W-1):0] part_toa_dt;
 assign toa_dt = {{(32 - TOA_W){1'b0}}, part_toa_dt};
@@ -138,7 +138,7 @@ t_interpolate #(
     .store_en       (store_en)      ,
     .edge_index     (edge_index)    ,
     .store_rdy      (store_rdy)     ,
-    .edge_time      (part_toa_dt)        
+    .toa_dt         (part_toa_dt)        
 );
 
 endmodule

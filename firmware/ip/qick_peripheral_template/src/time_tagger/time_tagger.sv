@@ -33,13 +33,12 @@
 `include "../headers/cmd_err.svh"
 
 module time_tagger #(
-    // Add parameters that you want to pass down
-    parameter FIFO_DEP      = 128,
-    parameter T_W           = 32, // Timer Width 
-    parameter N_S           =  8,
     parameter DT_W          = 16,
-    parameter RES           = 12, // ADC
-    parameter DTR_RST       = 10
+    parameter N_S           =  8,
+    parameter T_W           = 32, 
+    parameter FIFO_W        =  7,
+    parameter DTR_RST       = 10,
+    parameter RES           = 12
 ) (
     // Tproc Clock and Reset Signal
     input   wire                        clk_i       ,
@@ -57,6 +56,7 @@ module time_tagger #(
     output reg          [31:0]          status      , 
     output reg                          fifo_empty
 );
+
 localparam int ERR_W = 3;
 
 wire triggered;
@@ -91,17 +91,17 @@ acq_dtp #(
     .DT_W       (DT_W)      ,
     .N_S        (N_S)       ,
     .T_W        (T_W)       ,
-    .RES        (RES)       ,
-    .DTR_RST    (DTR_RST)     
+    .DTR_RST    (DTR_RST)   ,
+    .RES        (RES)           
 ) tagger_dtp (
     .clk_i              (clk_i)             ,
     .rst_ni             (rst_ni)            ,
-    .data_v             (tdata)             ,
+    .tdata              (tdata)             ,
+    .qp_threshold       (threshold[RES-1:0]),
     .armed              (arm)               ,
     .acq_en             (acq_en)            ,
     .store_en           (store_en)          ,
     .asleep             (asleep)            ,
-    .threshold          (threshold[RES-1:0]),
     .triggered          (triggered)         ,
     .store_rdy          (store_rdy)         ,
     .wake_up            (wake_up)           ,
@@ -111,15 +111,12 @@ acq_dtp #(
 ///////////////////////////////////////////////////////////////////////////////
 // Acquisition FIFO
 ///////////////////////////////////////////////////////////////////////////////
-localparam int DEP_W = $clog2(FIFO_DEP); // Need to Fix this
-
-wire [DEP_W-1:0] fifo_count; 
-
+localparam int FIFO_DEPTH = 2**FIFO_W;
+wire [FIFO_W-1:0] fifo_count; 
 assign toa_wren = store_rdy & store_en;
 
 tt_fifo #(
-    .N          (FIFO_DEP)  ,
-    .N_W        (DEP_W)   ,  
+    .N_LOG2     (FIFO_W),  
     .B          (32)
 ) data_fifo (
     .rstn   (rst_ni),
@@ -140,14 +137,12 @@ always_ff @(posedge clk_i, rst_ni) begin
     if (!rst_ni) status <= 0;
     else begin
         if (read_toa) begin
-            if ( fifo_empty )  status[ERR_W+DEP_W-1:DEP_W] = `EMPTY_ERR;
-            else status[DEP_W-1:0] <= (fifo_count - 1'b1); // always 1 less because just read value
+            if ( fifo_empty )  status[ERR_W+FIFO_W-1:FIFO_W] = `EMPTY_ERR;
+            else status[FIFO_W-1:0] <= (fifo_count - 1'b1); // always 1 less because just read value
         end
     end
 end
 
-
 // time tagger -> fifo -> DMA_ctrl -> AXI_DMA
-
 
 endmodule 

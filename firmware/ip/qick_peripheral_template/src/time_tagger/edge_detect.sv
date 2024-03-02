@@ -15,12 +15,12 @@
 
 module edge_detect #(
     parameter DT_W      =       16,
-    parameter RES       =       12,
-    parameter N_S       =        8           
+    parameter N_S       =        8,   
+    parameter RES       =       12        
 ) (
     input   wire                      clk_i       ,
     input   wire                      rst_ni      ,
-    input   wire      [DT_W*N_S-1:0]  data_v      ,
+    input   wire      [DT_W*N_S-1:0]  tdata       ,
     input   wire                      acq_en      , 
     input   wire      [RES-1:0]       threshold   ,  // adc threshold value
     output  reg                       above_thresh, // Signal to the control (this is asynchronous)
@@ -38,7 +38,7 @@ generate
         reg  [RES+1:0] result_reg;
         
         // Take the first signed bit of the adc samples
-        wire [RES:0] signed_sample_ii = data_v[((ii*DT_W) + RES) :(ii*DT_W)];
+        wire [RES:0] signed_sample_ii = tdata[((ii*DT_W) + RES) :(ii*DT_W)];
 
         dsp_edge_crossing #() edge_comp (      
             .A          (signed_threshold),

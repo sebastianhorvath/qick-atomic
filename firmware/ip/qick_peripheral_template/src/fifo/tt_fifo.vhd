@@ -13,11 +13,8 @@ entity tt_fifo is
         -- Data width.
         B : Integer := 16;
         
-        -- Fifo depth.
-        N : Integer := 4;
-
         -- Width for Depth
-        N_W : Integer := 3
+        N_LOG2 : Integer := 3
     );
     Port
     ( 
@@ -33,7 +30,7 @@ entity tt_fifo is
         dout   	: out std_logic_vector (B-1 downto 0);
 
         -- Status
-        d_count : out std_logic_vector ( N_W - 1 downto 0);
+        d_count : out std_logic_vector ( N_LOG2 - 1 downto 0);
         
         -- Flags.
         full    : out std_logic;        
@@ -44,7 +41,7 @@ end tt_fifo;
 architecture rtl of tt_fifo is
 
 -- Number of bits of depth.
-constant N_LOG2 : Integer := Integer(ceil(log2(real(N))));
+constant N: Integer := Integer(2 ** N_LOG2);
 
 -- Dual port, single clock  BRAM.
 component bram_simple_dp is

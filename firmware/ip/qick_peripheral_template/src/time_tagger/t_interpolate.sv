@@ -30,13 +30,13 @@ module t_interpolate #(
     input   wire    [N_S-1:0]       edge_index      ,
 
     output  reg                     store_rdy       ,
-    output  reg     [(N_B+T_W-1):0] edge_time              
+    output  reg     [(N_B+T_W-1):0] toa_dt                        
 );
 wire [T_W-1:0] t_diff;
 reg [N_B-1:0] trig_samp;
 reg one_valid;
 
-// Decoder for the Edge index
+// Priority Decoder
 always_comb begin
     trig_samp =  0;
     one_valid = 0;
@@ -50,12 +50,12 @@ end
 
 always_ff @ (posedge clk_i, negedge rst_ni) begin
     if (!rst_ni) begin
-        edge_time <= 1'b0;
+        toa_dt <= 1'b0;
         store_rdy <= 1'b0;
     end
     else begin
         if (store_en) begin
-            edge_time <= (trig_time << N_B) + trig_samp; 
+            toa_dt <= (trig_time << N_B) + trig_samp; 
             store_rdy <= 1'b1;
         end
         else store_rdy <= 0;
