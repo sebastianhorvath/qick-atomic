@@ -41,7 +41,6 @@ entity axi_slv_qp is
 	 QP_FRAC	   : out std_logic_vector (31 downto 0) ;
 	 QP_DELAY	   : out std_logic_vector (31 downto 0) ;
 	 QP_THRES	   : out std_logic_vector (31 downto 0) ;
-     QP_STATUS     : out std_logic_vector (31 downto 0) ;
      AXI_DT1       : out std_logic_vector (31 downto 0) ;
      AXI_DT2       : out std_logic_vector (31 downto 0) ;
      AXI_DT3       : out std_logic_vector (31 downto 0) ;
@@ -50,6 +49,7 @@ entity axi_slv_qp is
      QP_DT2        : in  std_logic_vector (31 downto 0) ;
      QP_DT3        : in  std_logic_vector (31 downto 0) ;
      QP_DT4        : in  std_logic_vector (31 downto 0) ;
+	 QP_STATUS     : in  std_logic_vector (31 downto 0) ;
      QP_DEBUG      : in  std_logic_vector (31 downto 0) );
 end axi_slv_qp;
 
@@ -483,11 +483,11 @@ begin
 	      when b"1010" =>
 	        reg_data_out <= QP_DT4;
 	      when b"1011" =>
-	        reg_data_out <= "00000000000000000000000000000000";
+	        reg_data_out <= slv_reg11;
 	      when b"1100" =>
-	        reg_data_out <= "00000000000000000000000000000000";
+	        reg_data_out <= slv_reg12;
 	      when b"1101" =>
-	        reg_data_out <= "00000000000000000000000000000000";
+	        reg_data_out <= slv_reg13;
 	      when b"1110" =>
 	        reg_data_out <= QP_STATUS;
 	      when b"1111" =>

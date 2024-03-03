@@ -124,8 +124,7 @@ qtt_periph  # (
    .N_S              (N_S) ,
    .T_W              (T_W) ,
    .FIFO_W           (FIFO_W) ,
-   .DTR_RST          (DTR_RST) ,
-   .DEBUG            (DEBUG)
+   .DTR_RST          (DTR_RST) 
 ) qtt (
    .clk_i      ( c_clk     ) ,
    .rst_ni     ( c_aresetn    ) ,

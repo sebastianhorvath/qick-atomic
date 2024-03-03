@@ -71,10 +71,10 @@ reg [DATA_WIDTH-1:0] adc_memory [0:1023];
 task START_SIMULATION (); begin
    $display("START SIMULATION");
    if (test_case == 1) begin
-        $readmemb("C:/Users/schsd/Documents/Princeton/Classes/Senior_Year/ECE_497/thesis_project_files/qick_atomic/firmware/ip/qick_peripheral_template/TB/Mem_dt/nanowire1.txt", adc_memory);
+        $readmemb("../firmware/ip/qick_peripheral_template/TB/Mem_dt/nanowire1.txt", adc_memory);
    end
    else if (test_case == 2) begin
-        $readmemb("C:/Users/schsd/Documents/Princeton/Classes/Senior_Year/ECE_497/thesis_project_files/qick_atomic/firmware/ip/qick_peripheral_template/TB/Mem_dt/doublepeak1.txt", adc_memory);
+        $readmemb("../firmware/ip/qick_peripheral_template/TB/Mem_dt/doublepeak1.txt", adc_memory);
    end
 // Reset
    rst_ni    = 1'b0;

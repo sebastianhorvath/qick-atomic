@@ -94,7 +94,7 @@ qtt_periph #(
 int cycles;
 task START_SIMULATION(); begin
     $display("START SIMULATION");
-    $readmemb("C:/Users/schsd/Documents/Princeton/Classes/Senior_Year/ECE_497/thesis_project_files/qick_atomic/firmware/ip/qick_peripheral_template/TB/Mem_dt/nanowire1.txt", adc_memory);
+    $readmemb("../firmware/ip/qick_peripheral_template/TB/Mem_dt/nanowire1.txt", adc_memory);
     rst_ni = 0;
     cycles = 0;
     qp_en_i = 0;
