@@ -29,7 +29,7 @@ module axi_qick_peripheral # (
 // QPERIPH INTERFACE
    input  wire             qp_en_i        , //
    input  wire  [ 4:0]     qp_op_i        , //
-   // input  wire  [31:0]     qp_dt1_i       , //
+   input  wire  [31:0]     qp_dt1_i       , //
    // input  wire  [31:0]     qp_dt2_i       , // 
    // input  wire  [31:0]     qp_dt3_i       , // 
    // input  wire  [31:0]     qp_dt4_i       , // 
@@ -130,7 +130,7 @@ qtt_periph  # (
    .rst_ni     ( c_aresetn    ) ,
    .qp_en_i     ( qp_en_i     ) ,
    .qp_op_i     ( qp_op_i     ) ,
-   // .qp_dt1_i    ( qp_dt1_i    ) ,
+   //.qp_dt1_i    ( qp_dt1_i    ) ,
    // .qp_dt2_i    ( qp_dt2_i    ) , 
    // .qp_dt3_i    ( qp_dt3_i    ) , 
    // .qp_dt4_i    ( qp_dt4_i    ) , 
