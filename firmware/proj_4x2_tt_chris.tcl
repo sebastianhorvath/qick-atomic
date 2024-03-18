@@ -101,16 +101,16 @@ if {[string equal [get_filesets -quiet sources_1] ""]} {
 # Set 'sources_1' fileset object
 set obj [get_filesets sources_1]
 set files [list \
-  [file normalize "${origin_dir}/ip/qick_peripheral_template/src"] \
-  [file normalize "${origin_dir}/ip/qick_peripheral_template/src/fifo"] \
-  [file normalize "${origin_dir}/ip/qick_peripheral_template/src/headers"] \
-  [file normalize "${origin_dir}/ip/qick_peripheral_template/src/time_tagger"] \
-  [file normalize "${origin_dir}/ip/qick_peripheral_template/src/edge_detect/dsp_edge_crossing/dsp_edge_crossing.xci"] \
+  [file normalize "${origin_dir}/ip/qick_time_tagger/src"] \
+  [file normalize "${origin_dir}/ip/qick_time_tagger/src/fifo"] \
+  [file normalize "${origin_dir}/ip/qick_time_tagger/src/headers"] \
+  [file normalize "${origin_dir}/ip/qick_time_tagger/src/time_tagger"] \
+  [file normalize "${origin_dir}/ip/qick_time_tagger/src/edge_detect/dsp_edge_crossing/dsp_edge_crossing.xci"] \
 ]
 add_files -norecurse -fileset $obj $files
 
 # Set 'sources_1' fileset file properties for remote files
-set file "$origin_dir/ip/qick_peripheral_template/src/headers/cmd_err.svh"
+set file "$origin_dir/ip/qick_time_tagger/src/headers/cmd_err.svh"
 set file [file normalize $file]
 set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
 set_property -name "file_type" -value "Verilog Header" -objects $file_obj
@@ -126,12 +126,12 @@ set_property -name "top_auto_set" -value "0" -objects $obj
 # Set 'sources_1' fileset object
 set obj [get_filesets sources_1]
 set files [list \
- [file normalize "${origin_dir}/ip/qick_peripheral_template/src/edge_detect/dsp_edge_crossing/dsp_edge_crossing.xci"] \
+ [file normalize "${origin_dir}/ip/qick_time_tagger/src/edge_detect/dsp_edge_crossing/dsp_edge_crossing.xci"] \
 ]
 add_files -norecurse -fileset $obj $files
 
 # Set 'sources_1' fileset file properties for remote files
-set file "$origin_dir/ip/qick_peripheral_template/src/edge_detect/dsp_edge_crossing/dsp_edge_crossing.xci"
+set file "$origin_dir/ip/qick_time_tagger/src/edge_detect/dsp_edge_crossing/dsp_edge_crossing.xci"
 set file [file normalize $file]
 set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
 set_property -name "generate_files_for_reference" -value "0" -objects $file_obj
@@ -165,35 +165,35 @@ if {[string equal [get_filesets -quiet sim_1] ""]} {
 # Set 'sim_1' fileset object
 # set obj [get_filesets sim_1]
 # set files [list \
-#  [file normalize "${origin_dir}/ip/qick_peripheral_template/TB/tb_macros.svh"] \
-#  [file normalize "${origin_dir}/ip/qick_peripheral_template/TB/tb_qtt_axi.sv"] \
-#  [file normalize "${origin_dir}/ip/qick_peripheral_template/TB/tb_qtt_periph.sv"] \
-#  [file normalize "${origin_dir}/ip/qick_peripheral_template/TB/tb_qtt.sv"] \
-#  [file normalize "${origin_dir}/ip/qick_peripheral_template/TB/tb_qtt_acq_ctrl.sv"] \
-#  [file normalize "${origin_dir}/ip/qick_peripheral_template/TB/tb_qtt_intf.sv"] \
-#  [file normalize "${origin_dir}/ip/qick_peripheral_template/TB/tb_periph.sv"] \
-#  [file normalize "${origin_dir}/ip/qick_peripheral_template/TB/tb_enc.sv"] \
+#  [file normalize "${origin_dir}/ip/qick_time_tagger/TB/tb_macros.svh"] \
+#  [file normalize "${origin_dir}/ip/qick_time_tagger/TB/tb_qtt_axi.sv"] \
+#  [file normalize "${origin_dir}/ip/qick_time_tagger/TB/tb_qtt_periph.sv"] \
+#  [file normalize "${origin_dir}/ip/qick_time_tagger/TB/tb_qtt.sv"] \
+#  [file normalize "${origin_dir}/ip/qick_time_tagger/TB/tb_qtt_acq_ctrl.sv"] \
+#  [file normalize "${origin_dir}/ip/qick_time_tagger/TB/tb_qtt_intf.sv"] \
+#  [file normalize "${origin_dir}/ip/qick_time_tagger/TB/tb_periph.sv"] \
+#  [file normalize "${origin_dir}/ip/qick_time_tagger/TB/tb_enc.sv"] \
 # ]
 # add_files -norecurse -fileset $obj $files
 
 # Set 'sim_1' fileset object
 set obj [get_filesets sim_1]
 set files [list \
-  [file normalize "${origin_dir}/ip/qick_peripheral_template/TB"] \
-  [file normalize "${origin_dir}/ip/qick_peripheral_template/TB/axi_mst_0/hdl"] \
-  [file normalize "${origin_dir}/ip/qick_peripheral_template/TB/axi_mst_0/axi_mst_0.xci"] \
+  [file normalize "${origin_dir}/ip/qick_time_tagger/TB"] \
+  [file normalize "${origin_dir}/ip/qick_time_tagger/TB/axi_mst_0/hdl"] \
+  [file normalize "${origin_dir}/ip/qick_time_tagger/TB/axi_mst_0/axi_mst_0.xci"] \
 ]
 add_files -norecurse -fileset $obj $files
 
 
 # Set 'sim_1' fileset file properties for remote files
-set file "$origin_dir/ip/qick_peripheral_template/TB/tb_macros.svh"
+set file "$origin_dir/ip/qick_time_tagger/TB/tb_macros.svh"
 set file [file normalize $file]
 set file_obj [get_files -of_objects [get_filesets sim_1] [list "*$file"]]
 set_property -name "file_type" -value "Verilog Header" -objects $file_obj
 
 # Set sim_1 fileset file properties for local files
-set file "$origin_dir/ip/qick_peripheral_template/TB/axi_mst_0/axi_mst_0.xci"
+set file "$origin_dir/ip/qick_time_tagger/TB/axi_mst_0/axi_mst_0.xci"
 set file [file normalize $file]
 set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
 set_property -name "generate_files_for_reference" -value "0" -objects $file_obj
