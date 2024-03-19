@@ -133,7 +133,7 @@ tt_fifo #(
 // Status Register
 //////////////////////////////////////////////////////////////////////////////
 
-always_ff @(posedge clk_i, rst_ni) begin
+always_ff @(posedge clk_i, negedge rst_ni) begin
     if (!rst_ni) status <= 0;
     else begin
         if (read_toa) begin
