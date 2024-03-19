@@ -50,7 +50,6 @@ module qtt_periph #(
    output reg   [31:0]     QP_DT3      ,
    output reg   [31:0]     QP_DT4      ,
    output reg   [31:0]     QP_STATUS   ,
-   output reg   [31:0]     QP_DEBUG    ,
 // INPUTS 
    input  wire  [47:0]     qp_time     , 
 // DEBUG   

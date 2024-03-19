@@ -156,7 +156,6 @@ qtt_periph  # (
    .QP_DT3      ( r_qp_dt3      ) ,
    .QP_DT4      ( r_qp_dt4      ) ,
    .QP_STATUS   ( r_qp_status   ) ,
-   .QP_DEBUG    ( r_qp_debug    ) ,
    .qp_time     ( qp_time       ) , 
    .qp_do       ( qp_do_s       ) );
 
