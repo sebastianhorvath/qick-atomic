@@ -33,8 +33,24 @@ class  TimeTagger(SocIP):
     #Write your functions to this module right here 
         
     def send_pulsed_cmd(self, cmd_type):
-        return
+        self.control_reg = self.cmd_val[cmd_type] + 1
     
+    def set_threshold(self, threshold):
+        self.qp_threshold = threshold
+    
+    def set_delay(self, delay):
+        self.qp_delay = delay
+    
+    def set_fraction(self, fraction):
+        self.qp_fraction = fraction
+
+    # def read_status(self):
+    #     mask = 0xfff
+
+    def read_edge(self, edge_i):
+        return getattr(self, self.output_data[edge_i])
+    
+        
     # def const_out(self, val):
     #     #Different Controls  
     #     #self.control_reg = 1

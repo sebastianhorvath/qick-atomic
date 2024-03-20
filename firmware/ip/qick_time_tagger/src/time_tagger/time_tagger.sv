@@ -133,6 +133,7 @@ tt_fifo #(
 // Status Register
 //////////////////////////////////////////////////////////////////////////////
 
+// Change so that err is always on the bottom bits bc length in implementation is set
 always_ff @(posedge clk_i, negedge rst_ni) begin
     if (!rst_ni) status <= 0;
     else begin
