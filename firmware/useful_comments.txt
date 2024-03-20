@@ -1,0 +1,22 @@
+write_bd_tcl -force /home/mdifeder/bd_216_qt_2022-1.tcl -include_layout
+
+ipx::merge_project_changes ports [ipx::current_core]
+
+Tasks to Do:
+
+1. Copy over the project files with the block design and the include layout tag 
+2. Change all the clocks to the exact same reference which is tclk coming for the adc and the dac
+3. Then run the synthesis 
+4. Also change the ip folder name to the qick time tagger HS and then copy back the qick peripheral template for Martin
+
+5. The adc reset signals can be combined but not necessary 
+6. Slowest Sync Clock for the tproc_rst is just tproc clk
+
+6. Tproc clk just 
+
+time tagger -> fifo -> DMA_ctrl -> AXI_DMA
+
+
+To-do:
+Fix the clock domain crossing for the qick time tagger 
+1. axi_slv_qp (QP_CFG[7] -> multiplexing signal for the qtt module) 

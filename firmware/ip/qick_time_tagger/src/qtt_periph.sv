@@ -64,6 +64,7 @@ wire [DT_W*N_S-1:0] tdata = qp_tvalid ? qp_vector_i : '0;
 ///////////////////////////////////////////////////////////////////////////////
 // Python Command SYNCRONIZATION
 ///////////////////////////////////////////////////////////////////////////////
+
 // Control Signal SYNC (Three cycles guaranteed)
 wire [ 5:0] axi_ctrl ;
 sync_reg # (
@@ -85,6 +86,26 @@ end
 
 // Single Pulse Control Signal
 wire p_cmd_in_t01 =  !p_cmd_in_r & p_cmd_in;
+
+// Configuration Signal Sync (Three cycles guaranteed)
+wire [ 7:0] axi_cfg;
+sync_reg # (
+   .DW   (8)
+) cfg_sync (
+   .dt_i       ( QP_CFG  ) ,
+   .clk_i      ( clk_i   ) ,
+   .rst_ni     ( rst_ni  ) ,
+   .dt_o       ( axi_cfg )  ) ;
+
+// Threshold Signal Sync (Three cycles guaranteed)
+wire [31:0] axi_threshold;
+sync_reg # (
+   .DW ( 32 )
+) threshold_sync (
+   .dt_i       ( QP_THRES ) ,
+   .clk_i      ( clk_i    ) ,
+   .rst_ni     ( rst_ni   ) ,
+   .dt_o       ( axi_threshold ) );
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -195,20 +216,20 @@ wire [31:0] tt_fifo_out, tt_status;
 wire tt_fifo_empty;
 
 // Arming and Start Time determined by if AXI or not
-wire tt_arm = QP_CFG[7] ? axi_arm : qp_arm;
+wire tt_arm = axi_cfg[7] ? axi_arm : qp_arm;
 
 wire [31:0] toa_dt;
-wire tt_read_toa = QP_CFG[7] ? axi_read_toa : qp_read_toa;
+wire tt_read_toa = axi_cfg[7] ? axi_read_toa : qp_read_toa;
 
 // Tproc Multiplexing
-assign qp_fifo_in = ( !QP_CFG[7] ) ? tt_fifo_out : '0;
-assign qp_tt_status = ( !QP_CFG[7] ) ? tt_status : '0; 
-assign qp_fifo_empty = ( !QP_CFG[7] ) ? tt_fifo_empty : 1'b1;
+assign qp_fifo_in = ( !axi_cfg[7] ) ? tt_fifo_out : '0;
+assign qp_tt_status = ( !axi_cfg[7] ) ? tt_status : '0; 
+assign qp_fifo_empty = ( !axi_cfg[7] ) ? tt_fifo_empty : 1'b1;
 
 // Axi Multiplexing
-assign axi_toa_dt = QP_CFG[7] ? tt_fifo_out : '0;
-assign axi_tt_status = QP_CFG[7] ? tt_status : '0;
-assign axi_fifo_empty = QP_CFG[7] ? tt_fifo_empty : 1'b1;
+assign axi_toa_dt = axi_cfg[7] ? tt_fifo_out : '0;
+assign axi_tt_status = axi_cfg[7] ? tt_status : '0;
+assign axi_fifo_empty = axi_cfg[7] ? tt_fifo_empty : 1'b1;
 
 ///////////////////////////////////////////////////////////////////////////////
 // TAGGER
@@ -224,7 +245,7 @@ time_tagger #(
    .clk_i            (clk_i)           ,
    .rst_ni           (rst_ni)          ,
    .tdata            (tdata)           ,
-   .threshold        (QP_THRES)        ,   // Add this to the AXI Register Addressing
+   .threshold        (axi_threshold)   ,   // Add this to the AXI Register Addressing
    .arm              (tt_arm)          ,   // From Interface
    .read_toa         (tt_read_toa)     ,
    .fifo_out         (tt_fifo_out)     ,   // From Interface
