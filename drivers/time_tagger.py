@@ -3,7 +3,7 @@ import numpy as np
 from qick import DummyIp, SocIp
 
 class  TimeTagger(SocIP):
-    bindto = ['Fermi:user:qick_peripheral:1.0']
+    bindto = ['Fermi:user:qick_time_tagger_HS:1.0']
 
     REGISTERS = {'control_reg': 0,
                  'config_reg' : 1,
@@ -15,8 +15,11 @@ class  TimeTagger(SocIP):
                  'qp_dt2'     : 8, 
                  'qp_dt3'     : 9,
                  'qp_dt4'     : 10,
-                 'qp_status'  : 12, 
-                 'qp_debug'   : 13}
+                 'qp_delay'   : 11,
+                 'qp_fraction': 12,
+                 'qp_threshold':13,
+                 'qp_status'  : 14, 
+                 'qp_debug'   : 15}
     
     def __init__(self, description):
 
@@ -25,12 +28,17 @@ class  TimeTagger(SocIP):
         self.input_data = [attr for attr in dir(self) if 'data_reg' in attr]
         self.output_data = [attr for attr in dir(self) if 'qp_dt' in attr]
 
-    #Write your functions to this module right here 
-    
-    def const_out(self, val):
-        #Different Controls  
-        #self.control_reg = 1
+        self.cmd_val = {'arm': (1*2), 'disarm': (2*2), 'readout': (3*2)}
 
-        for data_reg, i in enumerate(self.input_data):
-            setattr(self, data_reg, val*i)
+    #Write your functions to this module right here 
+        
+    def send_pulsed_cmd(self, cmd_type):
+        return
+    
+    # def const_out(self, val):
+    #     #Different Controls  
+    #     #self.control_reg = 1
+
+    #     for data_reg, i in enumerate(self.input_data):
+    #         setattr(self, data_reg, val*i)
 

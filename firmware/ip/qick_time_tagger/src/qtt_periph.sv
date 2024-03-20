@@ -66,7 +66,7 @@ wire [DT_W*N_S-1:0] tdata = qp_tvalid ? qp_vector_i : '0;
 ///////////////////////////////////////////////////////////////////////////////
 
 // Control Signal SYNC (Three cycles guaranteed)
-wire [ 5:0] axi_ctrl ;
+wire [ 5:0] axi_ctrl;
 sync_reg # (
    .DW ( 6 )
 ) cmd_sync (
@@ -107,7 +107,7 @@ sync_reg # (
    .rst_ni     ( rst_ni   ) ,
    .dt_o       ( axi_threshold ) );
 
-
+wire axi_threshold_const = axi_threshold[0];
 ///////////////////////////////////////////////////////////////////////////////
 // Input Command and Data 
 ///////////////////////////////////////////////////////////////////////////////
