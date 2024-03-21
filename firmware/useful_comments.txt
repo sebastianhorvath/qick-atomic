@@ -1,4 +1,4 @@
-write_bd_tcl -force /home/mdifeder/bd_216_qt_2022-1.tcl -include_layout
+write_bd_tcl -force ./bd/bd_216_hs_2022-1.tcl -include_layout
 
 ipx::merge_project_changes ports [ipx::current_core]
 
@@ -35,3 +35,14 @@ qp_do
 32 | 31 | 30 | 29 | 28 | 27 | 26 | 25 | 24 | 23 | 22 | 21 | 20 | 19 | 18 | 17 | 16 | 15 | 14 | 13 |       12        |    11   |    10    | 9  8  7  6   5   |     4      |   3   |    2    |   1 - 0   |
  
                                                                                                   |   tt_read_toa   |  tt_arm | axi_cfg  |      axi_op      |  store_rdy |  trig |  acq_en | tt_state  |
+
+
+What do I trigger the ILA core on?
+- First option is the config or any of the commands such as ARM, DISARM, READ
+
+Are we testing fucntionality or are we testing the axi commands? We are doing both
+I believe we have everything necessary from a triggering perspective. 
+
+1. Trigger on triggered to see the value and the time stamp and check that we are triggering 
+2. Trigger ILA on the axi command to check each ones fucntion 
+3. Trigger ILA on arm for watching the state behavior etc. 
