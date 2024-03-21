@@ -18,6 +18,20 @@ time tagger -> fifo -> DMA_ctrl -> AXI_DMA
 
 
 To-do:
-1. Add ila_cores for the axi commands and the time tagger state 
-2. Add extra bits to the status register for the state of the acquistion 
-3. Else? 
+1. Add debug signals to deduce functionality 
+    a. State of the time tagger (IDLE, triggered, etc)
+    b. Signal on the output of the fifo 
+    c. Check arm, read, fifo_out, fifo_empty
+    d. The datapath triggered line
+    e. Store ready
+2. Add a clock domain cross-over for the values going from the tproc to the axi_reg 
+    a. DTi 
+    b. Status Register (cannot contain infomation that changes on tproc time)
+
+
+Debug Lines:
+qp_do 
+
+32 | 31 | 30 | 29 | 28 | 27 | 26 | 25 | 24 | 23 | 22 | 21 | 20 | 19 | 18 | 17 | 16 | 15 | 14 | 13 |       12        |    11   |    10    | 9  8  7  6   5   |     4      |   3   |    2    |   1 - 0   |
+ 
+                                                                                                  |   tt_read_toa   |  tt_arm | axi_cfg  |      axi_op      |  store_rdy |  trig |  acq_en | tt_state  |

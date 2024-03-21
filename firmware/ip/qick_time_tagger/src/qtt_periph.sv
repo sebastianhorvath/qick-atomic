@@ -54,7 +54,8 @@ module qtt_periph #(
 // INPUTS 
    input  wire  [47:0]     qp_time     , 
 // DEBUG   
-   output wire [31:0]      qp_do     );
+   output wire  [31:0]     qp_do       ,
+   output wire  [31:0]     qp_val_do);
 
 wire [T_W-1:0] curr_time;
 
@@ -98,6 +99,8 @@ sync_reg # (
    .rst_ni     ( rst_ni  ) ,
    .dt_o       ( axi_cfg )  ) ;
 
+assign qtt_debug[10] = axi_cfg[7];
+
 // Threshold Signal Sync (Three cycles guaranteed)
 wire [31:0] axi_threshold;
 sync_reg # (
@@ -127,7 +130,9 @@ always_ff @ (posedge clk_i, negedge rst_ni) begin
       c_op_r      <= 1'b0; 
    end
 end
-   
+
+assign qtt_debug[10:5] = c_op_r;
+
 ///////////////////////////////////////////////////////////////////////////////
 // Communication for ZYNQ (AXI)
 ///////////////////////////////////////////////////////////////////////////////
@@ -252,7 +257,8 @@ time_tagger #(
    .read_toa         (tt_read_toa)     ,
    .fifo_out         (tt_fifo_out)     ,   // From Interface
    .status           (tt_status)       ,   // To Interface
-   .fifo_empty       (tt_fifo_empty)          // To Interface
+   .fifo_empty       (tt_fifo_empty)   ,      // To Interface
+   .tt_debug         (qtt_debug[4:0])
 );
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -282,5 +288,17 @@ always_ff @ (posedge clk_i, negedge rst_ni) begin
       end
    end
 end
+
+//////////////////////////////////////////////////////////////////////////////////
+// Debug Connections
+//////////////////////////////////////////////////////////////////////////////////
+wire [31:0] qtt_debug; 
+assign qtt_debug[11] = tt_arm;
+assign qtt_debug[12] = tt_read_toa;
+assign qtt_debug[31:12] = '0;
+assign qp_do = qtt_debug;
+
+// Fifo Value 
+assign qp_val_do = tt_fifo_empty;
 
 endmodule

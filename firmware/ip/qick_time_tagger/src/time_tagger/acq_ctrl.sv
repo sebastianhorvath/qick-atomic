@@ -27,7 +27,9 @@ module acq_ctrl # (
     // Acq Datapath Outputs
     output reg          acq_en          ,
     output reg          store_en        ,
-    output reg          asleep
+    output reg          asleep          ,
+    // Debug State 
+    output wire [1:0]   state_do     
 );
 
 typedef enum {  IDLE_ST         ,
@@ -38,6 +40,8 @@ typedef enum {  IDLE_ST         ,
 
 // State register
 state_t acq_state;
+
+assign state_do = acq_state;
 // State Outputs and Control Signals 
 always_comb begin 
     acq_en = 1'b0;

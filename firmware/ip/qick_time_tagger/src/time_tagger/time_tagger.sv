@@ -54,7 +54,9 @@ module time_tagger #(
     // Outputs to the Interface
     output reg          [31:0]          fifo_out    ,
     output reg          [31:0]          status      , 
-    output reg                          fifo_empty
+    output reg                          fifo_empty  ,
+    // Debug
+    output wire         [ 4:0]         tt_debug    
 );
 
 localparam int ERR_W = 3;
@@ -80,7 +82,8 @@ acq_ctrl #(
     .wake_up        (wake_up)           ,
     .acq_en         (acq_en)            ,
     .asleep         (asleep)            ,
-    .store_en       (store_en)          
+    .store_en       (store_en)          ,
+    .state_do       (tt_debug[1:0])                     
 );
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -141,8 +144,18 @@ always_ff @(posedge clk_i, negedge rst_ni) begin
             if ( fifo_empty )  status[ERR_W+FIFO_W-1:FIFO_W] = `EMPTY_ERR;
             else status[FIFO_W-1:0] <= (fifo_count - 1'b1); // always 1 less because just read value
         end
+
     end
 end
+
+//////////////////////////////////////////////////////////////////////////////
+// Debug Assignment
+/////////////////////////////////////////////////////////////////////////////
+
+assign tt_debug[2] = acq_en;
+assign tt_debug[3] = triggered;
+assign tt_debug[4] = store_rdy;
+
 
 // time tagger -> fifo -> DMA_ctrl -> AXI_DMA
 

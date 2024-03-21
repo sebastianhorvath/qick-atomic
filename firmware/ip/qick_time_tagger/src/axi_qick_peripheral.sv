@@ -67,8 +67,9 @@ module axi_qick_peripheral # (
    output wire [ 1:0]      s_axi_rresp    ,
    output wire             s_axi_rvalid   ,
    input  wire             s_axi_rready   ,
-///// DEBUG   
-   output wire [31:0]      qp_do        
+///// DEBUG  
+   output wire [31:0]      qp_do          ,
+   output wire [31:0]      qp_val_do      
    );
 
 
@@ -121,7 +122,7 @@ axi_slv_qp # (
    .QP_STATUS  ( r_qp_status        ) ,
    .QP_DEBUG   ( r_qp_debug         ) );
 
-wire [31:0] qp_do_s;
+wire [31:0] qp_do_s, qp_val_do_s;
 qtt_periph  # (
    .DT_W             (DT_W) ,
    .N_S              (N_S) ,
@@ -161,7 +162,8 @@ qtt_periph  # (
    .QP_DT4      ( r_qp_dt4      ) ,
    .QP_STATUS   ( r_qp_status   ) ,
    .qp_time     ( qp_time       ) , 
-   .qp_do       ( qp_do_s       ) );
+   .qp_do       ( qp_do_s       ) ,
+   .qp_val_do   ( qp_val_do_s   ));
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -176,12 +178,15 @@ generate
    if             (DEBUG == 0 )  begin: DEBUG_NO
       assign r_qp_debug   = 0;
       assign qp_do      = 0;
+      assign qp_val_do  = 0;
    end else if    (DEBUG == 1)   begin: DEBUG_REG
       assign r_qp_debug = qp_debug_s;
       assign qp_do      = 0;
+      assign qp_val_do  = 0;
    end else                      begin: DEBUG_OUT
       assign r_qp_debug = qp_debug_s;
       assign qp_do      = qp_do_s;
+      assign qp_val_do  = qp_val_do_s;
    end
 endgenerate
 
