@@ -401,7 +401,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>20535876</spirit:value>
+            <spirit:value>5fb4c705</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -420,7 +420,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>20535876</spirit:value>
+            <spirit:value>5fb4c705</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -434,7 +434,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>958b4402</spirit:value>
+            <spirit:value>c302f376</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -1052,6 +1052,11 @@
         <spirit:displayName>Dtr Rst</spirit:displayName>
         <spirit:value spirit:format="long" spirit:resolve="generated" spirit:id="MODELPARAM_VALUE.DTR_RST">10</spirit:value>
       </spirit:modelParameter>
+      <spirit:modelParameter spirit:dataType="integer">
+        <spirit:name>ADC_RES</spirit:name>
+        <spirit:displayName>Adc Res</spirit:displayName>
+        <spirit:value spirit:format="long" spirit:resolve="generated" spirit:id="MODELPARAM_VALUE.ADC_RES">14</spirit:value>
+      </spirit:modelParameter>
     </spirit:modelParameters>
   </spirit:model>
   <spirit:choices>
@@ -1070,6 +1075,11 @@
       <spirit:enumeration>ACTIVE_LOW</spirit:enumeration>
     </spirit:choice>
     <spirit:choice>
+      <spirit:name>choice_list_a149994b</spirit:name>
+      <spirit:enumeration>12</spirit:enumeration>
+      <spirit:enumeration>14</spirit:enumeration>
+    </spirit:choice>
+    <spirit:choice>
       <spirit:name>choice_list_f86403bf</spirit:name>
       <spirit:enumeration>4</spirit:enumeration>
       <spirit:enumeration>8</spirit:enumeration>
@@ -1082,7 +1092,12 @@
       <spirit:file>
         <spirit:name>src/edge_detect/dsp_edge_crossing/dsp_edge_crossing.xci</spirit:name>
         <spirit:userFileType>xci</spirit:userFileType>
-        <spirit:userFileType>CELL_NAME_qtt/photon_time/tagger_dtp/photon_arrival/generate_edge_comparators[0].edge_comp</spirit:userFileType>
+        <spirit:userFileType>CELL_NAME_qtt/photon_time/tagger_dtp/photon_arrival/dsp_edge_crossing</spirit:userFileType>
+      </spirit:file>
+      <spirit:file>
+        <spirit:name>src/edge_detect/dsp_edge_crossing_14bit/dsp_edge_crossing_14bit.xci</spirit:name>
+        <spirit:userFileType>xci</spirit:userFileType>
+        <spirit:userFileType>CELL_NAME_qtt/photon_time/tagger_dtp/photon_arrival/generate_edge_comparators[0].gen_14bit_edge_comparator.edge_comp</spirit:userFileType>
       </spirit:file>
       <spirit:file>
         <spirit:name>src/headers/cmd_err.svh</spirit:name>
@@ -1136,7 +1151,7 @@
       <spirit:file>
         <spirit:name>src/axi_qick_peripheral.sv</spirit:name>
         <spirit:fileType>systemVerilogSource</spirit:fileType>
-        <spirit:userFileType>CHECKSUM_909c29ff</spirit:userFileType>
+        <spirit:userFileType>CHECKSUM_5ec0353e</spirit:userFileType>
       </spirit:file>
     </spirit:fileSet>
     <spirit:fileSet>
@@ -1154,7 +1169,12 @@
       <spirit:file>
         <spirit:name>src/edge_detect/dsp_edge_crossing/dsp_edge_crossing.xci</spirit:name>
         <spirit:userFileType>xci</spirit:userFileType>
-        <spirit:userFileType>CELL_NAME_qtt/photon_time/tagger_dtp/photon_arrival/generate_edge_comparators[0].edge_comp</spirit:userFileType>
+        <spirit:userFileType>CELL_NAME_qtt/photon_time/tagger_dtp/photon_arrival/dsp_edge_crossing</spirit:userFileType>
+      </spirit:file>
+      <spirit:file>
+        <spirit:name>src/edge_detect/dsp_edge_crossing_14bit/dsp_edge_crossing_14bit.xci</spirit:name>
+        <spirit:userFileType>xci</spirit:userFileType>
+        <spirit:userFileType>CELL_NAME_qtt/photon_time/tagger_dtp/photon_arrival/generate_edge_comparators[0].gen_14bit_edge_comparator.edge_comp</spirit:userFileType>
       </spirit:file>
       <spirit:file>
         <spirit:name>src/headers/cmd_err.svh</spirit:name>
@@ -1225,7 +1245,7 @@
       <spirit:file>
         <spirit:name>xgui/qick_time_tagger_HS_v1_0.tcl</spirit:name>
         <spirit:fileType>tclSource</spirit:fileType>
-        <spirit:userFileType>CHECKSUM_958b4402</spirit:userFileType>
+        <spirit:userFileType>CHECKSUM_c302f376</spirit:userFileType>
         <spirit:userFileType>XGUI_VERSION_2</spirit:userFileType>
       </spirit:file>
     </spirit:fileSet>
@@ -1283,6 +1303,11 @@
       <spirit:displayName>Detector_Reset_Time</spirit:displayName>
       <spirit:value spirit:format="long" spirit:resolve="user" spirit:id="PARAM_VALUE.DTR_RST" spirit:minimum="0" spirit:maximum="1000" spirit:rangeType="long">10</spirit:value>
     </spirit:parameter>
+    <spirit:parameter>
+      <spirit:name>ADC_RES</spirit:name>
+      <spirit:displayName>ADC Resolution</spirit:displayName>
+      <spirit:value spirit:format="long" spirit:resolve="user" spirit:id="PARAM_VALUE.ADC_RES" spirit:choiceRef="choice_list_a149994b">14</spirit:value>
+    </spirit:parameter>
   </spirit:parameters>
   <spirit:vendorExtensions>
     <xilinx:coreExtensions>
@@ -1318,17 +1343,17 @@
       </xilinx:taxonomies>
       <xilinx:displayName>qick_time_tagger_HS</xilinx:displayName>
       <xilinx:definitionSource>package_project</xilinx:definitionSource>
-      <xilinx:coreRevision>11</xilinx:coreRevision>
-      <xilinx:coreCreationDateTime>2024-03-18T16:49:06Z</xilinx:coreCreationDateTime>
+      <xilinx:coreRevision>12</xilinx:coreRevision>
+      <xilinx:coreCreationDateTime>2024-03-21T15:40:11Z</xilinx:coreCreationDateTime>
     </xilinx:coreExtensions>
     <xilinx:packagingInfo>
       <xilinx:xilinxVersion>2022.1</xilinx:xilinxVersion>
       <xilinx:checksum xilinx:scope="busInterfaces" xilinx:value="607fb37b"/>
       <xilinx:checksum xilinx:scope="memoryMaps" xilinx:value="c930e363"/>
-      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="44fb9689"/>
+      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="e5e1f21f"/>
       <xilinx:checksum xilinx:scope="ports" xilinx:value="8fa66a39"/>
-      <xilinx:checksum xilinx:scope="hdlParameters" xilinx:value="ddeba30c"/>
-      <xilinx:checksum xilinx:scope="parameters" xilinx:value="2202b283"/>
+      <xilinx:checksum xilinx:scope="hdlParameters" xilinx:value="8dab8e1b"/>
+      <xilinx:checksum xilinx:scope="parameters" xilinx:value="1b44e710"/>
     </xilinx:packagingInfo>
   </spirit:vendorExtensions>
 </spirit:component>
