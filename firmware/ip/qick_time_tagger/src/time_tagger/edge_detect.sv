@@ -39,16 +39,25 @@ generate
         
         // Take the first signed bit of the adc samples
         wire [RES:0] signed_sample_ii = tdata[((ii*DT_W) + RES) :(ii*DT_W)];
-
-        dsp_edge_crossing #() edge_comp (      
-            .A          (signed_threshold),
-            .C          (signed_sample_ii),
-            .P          (result_ii)
-        );
+        
+        if ( RES == 12 ) begin : gen_12bit_edge_comparator
+            dsp_edge_crossing #() edge_comp (      
+                .A          (signed_threshold),
+                .C          (signed_sample_ii),
+                .P          (result_ii)
+            ); 
+        end 
+        else if ( RES == 14 ) begin : gen_14bit_edge_comparator
+            dsp_edge_crossing_14bit #() edge_comp (      
+                .A          (signed_threshold),
+                .C          (signed_sample_ii),
+                .P          (result_ii)
+            );
+        end
         // Bits to Calculate the trigger
-        assign trig_bits[ii] = result_ii[RES+1];
+        assign trig_bits[ii] = result_ii[RES];
         // Bits used for the edge are registered to hit critical timing
-        assign edge_index[ii] = result_reg[RES+1];
+        assign edge_index[ii] = result_reg[RES];
         // Store the result only if in the  
         always_ff @(posedge clk_i, negedge rst_ni) begin
             if (!rst_ni) result_reg <= 0;

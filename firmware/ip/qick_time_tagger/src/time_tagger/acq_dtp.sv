@@ -21,7 +21,7 @@ module acq_dtp #(
     parameter N_S       =    8,
     parameter T_W       =   32, 
     parameter DTR_RST   =   10,
-    parameter RES       =   12
+    parameter ADC_RES   =   14
 ) (
     // System Inputs
     input   wire                        clk_i       ,
@@ -31,7 +31,7 @@ module acq_dtp #(
     // Axis Registers
     // input   wire      [31:0]            qp_delay    ,
     // input   wire      [31:0]            qp_frac     ,
-    input   wire      [RES-1:0]         qp_threshold, 
+    input   wire      [ADC_RES-1:0]         qp_threshold, 
     // Inputs from Control
     input   wire                        armed       ,
     input   wire                        acq_en      ,
@@ -107,7 +107,7 @@ end
 edge_detect #(
     .DT_W       (DT_W)  ,
     .N_S        (N_S)   ,
-    .RES        (RES)    
+    .RES        (ADC_RES)    
 ) photon_arrival (
     .clk_i             (clk_i)      ,
     .rst_ni            (rst_ni)     ,

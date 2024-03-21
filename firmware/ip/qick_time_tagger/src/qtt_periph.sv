@@ -17,7 +17,8 @@ module qtt_periph #(
    parameter DT_W       =  16 ,
    parameter N_S        =   8 ,
    parameter T_W        =  32 , 
-   parameter FIFO_W    =    7 ,
+   parameter FIFO_W     =   7 ,
+   parameter ADC_RES    =  14 ,
    parameter DTR_RST    =  10     //Clock Cycles    
 ) (
 // Core CLK & RST
@@ -240,6 +241,7 @@ time_tagger #(
    .N_S              (N_S)             ,
    .T_W              (T_W)             ,
    .FIFO_W           (FIFO_W)          ,
+   .ADC_RES          (ADC_RES)         ,
    .DTR_RST          (DTR_RST)      
 ) photon_time (
    .clk_i            (clk_i)           ,

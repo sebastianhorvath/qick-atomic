@@ -18,9 +18,6 @@ time tagger -> fifo -> DMA_ctrl -> AXI_DMA
 
 
 To-do:
-Fix the clock domain crossing for the qick time tagger 
-1. axi_slv_qp (QP_CFG[7] -> multiplexing signal for the qtt module) 
-2. also need to register threshold before sending into the time tagger 
-
-
-3. Register values from the fifo into a clock crossover register, however doesnt matter 
+1. Add ila_cores for the axi commands and the time tagger state 
+2. Add extra bits to the status register for the state of the acquistion 
+3. Else? 

@@ -13,12 +13,15 @@
 */
 //////////////////////////////////////////////////////////////////////////////
 
+// Resolution is board dependent parameter
+
 module axi_qick_peripheral # (
    parameter DT_W      = 16,
    parameter N_S       =  8,
    parameter T_W       = 32,
    parameter FIFO_W    =  7,
    parameter DTR_RST   = 10,
+   parameter ADC_RES   = 14, 
    parameter DEBUG     = 0
 ) (
 // Core and AXI CLK & RST
@@ -124,6 +127,7 @@ qtt_periph  # (
    .N_S              (N_S) ,
    .T_W              (T_W) ,
    .FIFO_W           (FIFO_W) ,
+   .ADC_RES          (ADC_RES),
    .DTR_RST          (DTR_RST) 
 ) qtt (
    .clk_i      ( c_clk     ) ,

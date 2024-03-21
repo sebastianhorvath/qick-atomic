@@ -38,7 +38,7 @@ module time_tagger #(
     parameter T_W           = 32, 
     parameter FIFO_W        =  7,
     parameter DTR_RST       = 10,
-    parameter RES           = 12
+    parameter ADC_RES       = 12
 ) (
     // Tproc Clock and Reset Signal
     input   wire                        clk_i       ,
@@ -92,12 +92,12 @@ acq_dtp #(
     .N_S        (N_S)       ,
     .T_W        (T_W)       ,
     .DTR_RST    (DTR_RST)   ,
-    .RES        (RES)           
+    .ADC_RES    (ADC_RES)           
 ) tagger_dtp (
     .clk_i              (clk_i)             ,
     .rst_ni             (rst_ni)            ,
     .tdata              (tdata)             ,
-    .qp_threshold       (threshold[RES-1:0]),
+    .qp_threshold       (threshold[ADC_RES-1:0]),
     .armed              (arm)               ,
     .acq_en             (acq_en)            ,
     .store_en           (store_en)          ,

@@ -2,7 +2,7 @@ from pynq.buffer import allocate
 import numpy as np
 from qick import DummyIp, SocIp
 
-class  TimeTagger(SocIP):
+class TimeTagger(SocIP):
     bindto = ['Fermi:user:qick_time_tagger_HS:1.0']
 
     REGISTERS = {'control_reg': 0,
@@ -30,8 +30,19 @@ class  TimeTagger(SocIP):
 
         self.cmd_val = {'arm': (1*2), 'disarm': (2*2), 'readout': (3*2)}
 
-    #Write your functions to this module right here 
+        #default values
+        self.qp_threshold = 2**12
         
+        self.FIFO_W = int(description['parameters']['FIFO_W'])
+        
+
+    #Write your functions to this module right here 
+    def configure_axi(self, on):
+        if on is True :
+            self.config_reg = 1 << 7
+        else:
+            self.config_reg = 0 << 7
+
     def send_pulsed_cmd(self, cmd_type):
         self.control_reg = self.cmd_val[cmd_type] + 1
     
@@ -43,18 +54,16 @@ class  TimeTagger(SocIP):
     
     def set_fraction(self, fraction):
         self.qp_fraction = fraction
-
-    # def read_status(self):
-    #     mask = 0xfff
+    
+    def read_status(self):
+        fifo_cnt_mask = (1 << self.FIFO_W) - 1
+        fifo_cnt = fifo_cnt_mask & self.qp_status
+        err_msg = self.qp_status >> self.FIFO_W
+        return err_msg, fifo_cnt
 
     def read_edge(self, edge_i):
+        if self.read_status()[1] == 0:
+           print("Empty Fifo cannot read")
+           return 0
         return getattr(self, self.output_data[edge_i])
     
-        
-    # def const_out(self, val):
-    #     #Different Controls  
-    #     #self.control_reg = 1
-
-    #     for data_reg, i in enumerate(self.input_data):
-    #         setattr(self, data_reg, val*i)
-
