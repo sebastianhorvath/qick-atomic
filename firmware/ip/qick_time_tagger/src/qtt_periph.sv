@@ -299,6 +299,6 @@ assign qtt_debug[31:12] = '0;
 assign qp_do = qtt_debug;
 
 // Fifo Value 
-assign qp_val_do = tt_fifo_empty;
+assign qp_val_do = tt_fifo_out;
 
 endmodule
