@@ -131,7 +131,7 @@ always_ff @ (posedge clk_i, negedge rst_ni) begin
    end
 end
 
-assign qtt_debug[10:5] = c_op_r;
+assign qtt_debug[9:5] = c_op_r;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Communication for ZYNQ (AXI)
@@ -295,7 +295,7 @@ end
 wire [31:0] qtt_debug; 
 assign qtt_debug[11] = tt_arm;
 assign qtt_debug[12] = tt_read_toa;
-assign qtt_debug[31:12] = '0;
+assign qtt_debug[31:13] = '0;
 assign qp_do = qtt_debug;
 
 // Fifo Value 
