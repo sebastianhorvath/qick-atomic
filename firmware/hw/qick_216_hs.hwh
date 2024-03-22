@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Tue Mar 19 21:54:50 2024" VIVADOVERSION="2022.1">
+<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Thu Mar 21 22:31:30 2024" VIVADOVERSION="2022.1">
 
   <SYSTEMINFO ARCH="zynquplusRFSOC" BOARD="xilinx.com:zcu216:part0:2.0" DEVICE="xczu49dr" NAME="d_1" PACKAGE="ffvf1760" SPEEDGRADE="-2"/>
 
@@ -14701,18 +14701,19 @@
         </BUSINTERFACE>
       </BUSINTERFACES>
     </MODULE>
-    <MODULE COREREVISION="11" FULLNAME="/qick_time_tagger_HS_0" HWVERSION="1.0" INSTANCE="qick_time_tagger_HS_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="qick_time_tagger_HS" VLNV="Fermi:user:qick_time_tagger_HS:1.0">
+    <MODULE COREREVISION="15" FULLNAME="/qick_time_tagger_HS_0" HWVERSION="1.0" INSTANCE="qick_time_tagger_HS_0" IPTYPE="PERIPHERAL" IS_ENABLE="1" MODCLASS="PERIPHERAL" MODTYPE="qick_time_tagger_HS" VLNV="Fermi:user:qick_time_tagger_HS:1.0">
       <DOCUMENTS/>
       <ADDRESSBLOCKS>
         <ADDRESSBLOCK ACCESS="" INTERFACE="s_axi" NAME="reg0" RANGE="0x1000" USAGE="register"/>
       </ADDRESSBLOCKS>
       <PARAMETERS>
-        <PARAMETER NAME="DEBUG" VALUE="0"/>
+        <PARAMETER NAME="DEBUG" VALUE="3"/>
         <PARAMETER NAME="DT_W" VALUE="16"/>
         <PARAMETER NAME="N_S" VALUE="8"/>
-        <PARAMETER NAME="T_W" VALUE="32"/>
+        <PARAMETER NAME="T_W" VALUE="28"/>
         <PARAMETER NAME="FIFO_W" VALUE="7"/>
-        <PARAMETER NAME="DTR_RST" VALUE="10"/>
+        <PARAMETER NAME="DTR_RST" VALUE="5"/>
+        <PARAMETER NAME="ADC_RES" VALUE="14"/>
         <PARAMETER NAME="Component_Name" VALUE="d_1_qick_time_tagger_HS_0_0"/>
         <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
         <PARAMETER NAME="C_BASEADDR" VALUE="0xA00A0000"/>
@@ -14895,6 +14896,7 @@
           </CONNECTIONS>
         </PORT>
         <PORT DIR="O" LEFT="31" NAME="qp_do" RIGHT="0" SIGIS="undef"/>
+        <PORT DIR="O" LEFT="31" NAME="qp_val_do" RIGHT="0" SIGIS="undef"/>
       </PORTS>
       <BUSINTERFACES>
         <BUSINTERFACE BUSNAME="ps8_0_axi_periph_M10_AXI" DATAWIDTH="32" NAME="s_axi" TYPE="SLAVE" VLNV="xilinx.com:interface:aximm:1.0">
