@@ -50,11 +50,11 @@
 -- The following code must appear in the VHDL architecture header.
 
 ------------- Begin Cut here for COMPONENT Declaration ------ COMP_TAG
-COMPONENT dsp_edge_crossing_14bit
+COMPONENT dsp_12bit_edge_comp
   PORT (
-    A : IN STD_LOGIC_VECTOR(14 DOWNTO 0);
-    C : IN STD_LOGIC_VECTOR(14 DOWNTO 0);
-    P : OUT STD_LOGIC_VECTOR(15 DOWNTO 0) 
+    A : IN STD_LOGIC_VECTOR(11 DOWNTO 0);
+    C : IN STD_LOGIC_VECTOR(11 DOWNTO 0);
+    P : OUT STD_LOGIC_VECTOR(12 DOWNTO 0) 
   );
 END COMPONENT;
 -- COMP_TAG_END ------ End COMPONENT Declaration ------------
@@ -63,7 +63,7 @@ END COMPONENT;
 -- body. Substitute your own instance name and net names.
 
 ------------- Begin Cut here for INSTANTIATION Template ----- INST_TAG
-your_instance_name : dsp_edge_crossing_14bit
+your_instance_name : dsp_12bit_edge_comp
   PORT MAP (
     A => A,
     C => C,
@@ -71,8 +71,8 @@ your_instance_name : dsp_edge_crossing_14bit
   );
 -- INST_TAG_END ------ End INSTANTIATION Template ---------
 
--- You must compile the wrapper file dsp_edge_crossing_14bit.vhd when simulating
--- the core, dsp_edge_crossing_14bit. When compiling the wrapper file, be sure to
+-- You must compile the wrapper file dsp_12bit_edge_comp.vhd when simulating
+-- the core, dsp_12bit_edge_comp. When compiling the wrapper file, be sure to
 -- reference the VHDL simulation library.
 
 

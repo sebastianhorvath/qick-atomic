@@ -54,14 +54,14 @@
 // (in parentheses) to your own signal names.
 
 //----------- Begin Cut here for INSTANTIATION Template ---// INST_TAG
-dsp_edge_crossing_14bit your_instance_name (
-  .A(A),  // input wire [14 : 0] A
-  .C(C),  // input wire [14 : 0] C
-  .P(P)  // output wire [15 : 0] P
+dsp_14bit_edge_comp your_instance_name (
+  .A(A),  // input wire [13 : 0] A
+  .C(C),  // input wire [13 : 0] C
+  .P(P)  // output wire [14 : 0] P
 );
 // INST_TAG_END ------ End INSTANTIATION Template ---------
 
-// You must compile the wrapper file dsp_edge_crossing_14bit.v when simulating
-// the core, dsp_edge_crossing_14bit. When compiling the wrapper file, be sure to
+// You must compile the wrapper file dsp_14bit_edge_comp.v when simulating
+// the core, dsp_14bit_edge_comp. When compiling the wrapper file, be sure to
 // reference the Verilog simulation library.
 
