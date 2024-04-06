@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Fri Apr  5 01:09:17 2024" VIVADOVERSION="2022.1">
+<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Fri Apr  5 19:18:07 2024" VIVADOVERSION="2022.1">
 
   <SYSTEMINFO ARCH="zynquplusRFSOC" BOARD="xilinx.com:zcu216:part0:2.0" DEVICE="xczu49dr" NAME="d_1" PACKAGE="ffvf1760" SPEEDGRADE="-2"/>
 
@@ -14712,7 +14712,7 @@
         <PARAMETER NAME="N_S" VALUE="8"/>
         <PARAMETER NAME="T_W" VALUE="29"/>
         <PARAMETER NAME="FIFO_W" VALUE="10"/>
-        <PARAMETER NAME="DTR_RST" VALUE="5"/>
+        <PARAMETER NAME="DTR_RST" VALUE="20"/>
         <PARAMETER NAME="ADC_RES" VALUE="14"/>
         <PARAMETER NAME="Component_Name" VALUE="d_1_qick_time_tagger_HS_0_0"/>
         <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
