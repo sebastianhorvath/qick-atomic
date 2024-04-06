@@ -78,8 +78,8 @@ always_ff @(posedge clk_i, negedge rst_ni) begin
             trig_time <= tt_curr_time;
             alr_trig <= 1;
         end
-        // If already triggered wait until below threshold to reallow a trigger
-        if (alr_trig & below_thresh) alr_trig <= 0;
+        // If already triggered wait until below threshold to reallow a trigger, but don't allow when dead
+        if (alr_trig && below_thresh && !asleep) alr_trig <= 0;
     end
 end
 

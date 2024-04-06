@@ -401,7 +401,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>98de991f</spirit:value>
+            <spirit:value>b1efce3a</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -420,7 +420,7 @@
         <spirit:parameters>
           <spirit:parameter>
             <spirit:name>viewChecksum</spirit:name>
-            <spirit:value>98de991f</spirit:value>
+            <spirit:value>b1efce3a</spirit:value>
           </spirit:parameter>
         </spirit:parameters>
       </spirit:view>
@@ -1356,14 +1356,14 @@
       </xilinx:taxonomies>
       <xilinx:displayName>qick_time_tagger_HS</xilinx:displayName>
       <xilinx:definitionSource>package_project</xilinx:definitionSource>
-      <xilinx:coreRevision>20</xilinx:coreRevision>
-      <xilinx:coreCreationDateTime>2024-04-06T19:28:24Z</xilinx:coreCreationDateTime>
+      <xilinx:coreRevision>21</xilinx:coreRevision>
+      <xilinx:coreCreationDateTime>2024-04-06T21:08:34Z</xilinx:coreCreationDateTime>
     </xilinx:coreExtensions>
     <xilinx:packagingInfo>
       <xilinx:xilinxVersion>2022.1</xilinx:xilinxVersion>
       <xilinx:checksum xilinx:scope="busInterfaces" xilinx:value="607fb37b"/>
       <xilinx:checksum xilinx:scope="memoryMaps" xilinx:value="c930e363"/>
-      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="3c569bc1"/>
+      <xilinx:checksum xilinx:scope="fileGroups" xilinx:value="8c805c81"/>
       <xilinx:checksum xilinx:scope="ports" xilinx:value="8c83eacd"/>
       <xilinx:checksum xilinx:scope="hdlParameters" xilinx:value="8dab8e1b"/>
       <xilinx:checksum xilinx:scope="parameters" xilinx:value="b076f82a"/>
