@@ -116,6 +116,7 @@ wire axi_threshold_const = axi_threshold[0];
 
 // Dead Time Signal Sync
 wire [31:0] axi_dead_time;
+reg [31:0] dead_time; 
 sync_reg #(
    .DW   ( 32 )
 ) dead_time_sync (
@@ -162,7 +163,7 @@ always_ff @ (posedge clk_i, negedge rst_ni) begin
    if (!rst_ni) begin
       axi_arm <= 0;
       axi_read_toa <= 0;
-
+      dead_time <= DTR_RST;
    end 
    else begin
       if ((axi_arm == 1) & (axi_start_time == curr_time)) begin
@@ -185,6 +186,9 @@ always_ff @ (posedge clk_i, negedge rst_ni) begin
                if (!axi_fifo_empty) begin
                   axi_next_valid <= 1; 
                end
+            end
+            `SET_DEAD_TIME: begin
+               dead_time <= axi_dead_time;
             end
             default: begin
                axi_read_toa <= 0; 
@@ -266,7 +270,7 @@ time_tagger #(
    .rst_ni           (rst_ni)          ,
    .tdata            (tdata)           ,
    .threshold        (axi_threshold)   ,   // Add this to the AXI Register Addressing
-   .dead_time        (axi_dead_time)   ,
+   .dead_time        (dead_time)       ,
    .arm              (tt_arm)          ,   // From Interface
    .read_toa         (tt_read_toa)     ,
    .fifo_out         (tt_fifo_out)     ,   // From Interface

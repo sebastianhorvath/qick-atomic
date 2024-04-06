@@ -5,6 +5,7 @@
 `define ARM_CMD 1 
 `define DISARM_CMD 2
 `define READOUT_CMD 3
+`define SET_DEAD_TIME 4
 
 // Error Message Define 
 `define EMPTY_ERR 1
