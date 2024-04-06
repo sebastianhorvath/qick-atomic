@@ -92,7 +92,7 @@ assign wake_up = (dead_time == 1);
 
 // Counter doesn't stop until = 0
 always_ff @(posedge clk_i, negedge rst_ni) begin
-    if (!rst_ni) dead_time <= qp_dead_time;
+    if (!rst_ni) dead_time <= DTR_RST;
     else begin 
         if (asleep) begin 
             dead_time <= dead_time - 1; 
