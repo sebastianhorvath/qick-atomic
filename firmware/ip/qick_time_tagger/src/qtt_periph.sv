@@ -115,16 +115,16 @@ sync_reg # (
 wire axi_threshold_const = axi_threshold[0];
 
 // Dead Time Signal Sync
-wire [31:0] axi_dead_time;
-reg [31:0] dead_time; 
-sync_reg #(
-   .DW   ( 32 )
-) dead_time_sync (
-   .dt_i        ( QP_DTR_RST ) ,
-   .clk_i       ( clk_i      ) ,
-   .rst_ni      ( rst_ni     ) ,
-   .dt_o        ( axi_dead_time) 
-);
+// wire [31:0] axi_dead_time;
+(* ASYNC_REG = "TRUE" *) reg [31:0] dead_time; 
+// sync_reg #(
+//    .DW   ( 32 )
+// ) dead_time_sync (
+//    .dt_i        ( QP_DTR_RST ) ,
+//    .clk_i       ( clk_i      ) ,
+//    .rst_ni      ( rst_ni     ) ,
+//    .dt_o        ( axi_dead_time) 
+// );
 
 ///////////////////////////////////////////////////////////////////////////////
 // Input Command and Data 
@@ -188,7 +188,7 @@ always_ff @ (posedge clk_i, negedge rst_ni) begin
                end
             end
             `SET_DEAD_TIME: begin
-               dead_time <= axi_dead_time;
+               dead_time <= QP_DTR_RST;
             end
             default: begin
                axi_read_toa <= 0; 
