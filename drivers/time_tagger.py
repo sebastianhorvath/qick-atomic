@@ -2,7 +2,7 @@ from pynq.buffer import allocate
 import numpy as np
 from qick import DummyIp, SocIp
 
-class TimeTagger(SocIP):
+class TimeTagger(SocIp):
     bindto = ['Fermi:user:qick_time_tagger_HS:1.0']
 
     REGISTERS = {'control_reg': 0,
@@ -25,8 +25,8 @@ class TimeTagger(SocIP):
 
         super().__init__(description)
 
-        self.input_data = [attr for attr in dir(self) if 'data_reg' in attr]
-        self.output_data = [attr for attr in dir(self) if 'qp_dt' in attr]
+        self.input_data = [key for key in self.REGISTERS if 'data_reg' in key]
+        self.output_data = [key for key in self.REGISTERS if 'qp_dt' in key]
 
         self.cmd_val = {'arm': (1*2), 'disarm': (2*2), 'readout': (3*2)}
 
@@ -42,6 +42,12 @@ class TimeTagger(SocIP):
             self.config_reg = 1 << 7
         else:
             self.config_reg = 0 << 7
+
+    def read_cfg(self):
+        return self.config_reg
+
+    def read_threshold(self):
+        return self.qp_threshold
 
     def send_pulsed_cmd(self, cmd_type):
         self.control_reg = self.cmd_val[cmd_type] + 1
@@ -66,4 +72,3 @@ class TimeTagger(SocIP):
            print("Empty Fifo cannot read")
            return 0
         return getattr(self, self.output_data[edge_i])
-    

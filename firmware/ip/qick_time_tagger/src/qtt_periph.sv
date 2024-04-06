@@ -42,6 +42,7 @@ module qtt_periph #(
    input  wire  [31:0]     QP_DELAY    ,
    input  wire  [31:0]     QP_FRAC     ,
    input  wire  [31:0]     QP_THRES    ,
+   input  wire  [31:0]     QP_DTR_RST  ,
    input  wire  [31:0]     AXI_DT1     ,
    input  wire  [31:0]     AXI_DT2     ,
    input  wire  [31:0]     AXI_DT3     ,
@@ -112,6 +113,18 @@ sync_reg # (
    .dt_o       ( axi_threshold ) );
 
 wire axi_threshold_const = axi_threshold[0];
+
+// Dead Time Signal Sync
+wire [31:0] axi_dead_time;
+sync_reg #(
+   .DW   ( 32 )
+) dead_time_sync (
+   .dt_i        ( QP_DTR_RST ) ,
+   .clk_i       ( clk_i      ) ,
+   .rst_ni      ( rst_ni     ) ,
+   .dt_o        ( axi_dead_time) 
+);
+
 ///////////////////////////////////////////////////////////////////////////////
 // Input Command and Data 
 ///////////////////////////////////////////////////////////////////////////////
@@ -253,6 +266,7 @@ time_tagger #(
    .rst_ni           (rst_ni)          ,
    .tdata            (tdata)           ,
    .threshold        (axi_threshold)   ,   // Add this to the AXI Register Addressing
+   .dead_time        (axi_dead_time)   ,
    .arm              (tt_arm)          ,   // From Interface
    .read_toa         (tt_read_toa)     ,
    .fifo_out         (tt_fifo_out)     ,   // From Interface

@@ -31,7 +31,8 @@ module acq_dtp #(
     // Axis Registers
     // input   wire      [31:0]            qp_delay    ,
     // input   wire      [31:0]            qp_frac     ,
-    input   wire      [ADC_RES-1:0]         qp_threshold, 
+    input   wire      [ADC_RES-1:0]     qp_threshold, 
+    input   wire      [31:0]            qp_dead_time,
     // Inputs from Control
     input   wire                        armed       ,
     input   wire                        acq_en      ,
@@ -85,19 +86,19 @@ end
 //////////////////////////////////////////////////////////////////////////////
 // Dead Time counter 
 //////////////////////////////////////////////////////////////////////////////
-localparam int DEAD_W = $clog2(DTR_RST);
-reg [DEAD_W-1:0] dead_time;
+// localparam int DEAD_W = $clog2(DTR_RST); eliminate DTR_RST for now
+reg [31:0] dead_time;
 assign wake_up = (dead_time == 1);
 
 // Counter doesn't stop until = 0
 always_ff @(posedge clk_i, negedge rst_ni) begin
-    if (!rst_ni) dead_time <= DTR_RST;
+    if (!rst_ni) dead_time <= qp_dead_time;
     else begin 
         if (asleep) begin 
             dead_time <= dead_time - 1; 
-            if (wake_up) dead_time <= DTR_RST;
+            if (wake_up) dead_time <= qp_dead_time;
         end
-        else dead_time <= DTR_RST;
+        else dead_time <= qp_dead_time;
     end
 end
 

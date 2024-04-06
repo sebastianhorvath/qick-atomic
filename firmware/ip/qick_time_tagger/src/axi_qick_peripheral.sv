@@ -77,7 +77,7 @@ module axi_qick_peripheral # (
 // AXI Register.
 wire [ 7:0] r_qp_ctrl;
 wire [ 7:0] r_qp_cfg;
-wire [31:0] r_qp_threshold, r_qp_delay, r_qp_frac;
+wire [31:0] r_qp_threshold, r_qp_delay, r_qp_frac, r_qp_dead_time;
 wire [31:0] r_axi_dt1, r_axi_dt2, r_axi_dt3, r_axi_dt4;
 wire [31:0] r_qp_dt1, r_qp_dt2, r_qp_dt3, r_qp_dt4;
 reg  [31:0] r_qp_status, r_qp_debug;
@@ -111,7 +111,8 @@ axi_slv_qp # (
    .QP_DELAY   ( r_qp_delay         ) ,
    .QP_FRAC    ( r_qp_frac          ) ,
    .QP_THRES   ( r_qp_threshold     ) ,
-   .AXI_DT1    ( r_axi_dt1          ) ,
+   .QP_DTR_RST ( r_qp_dead_time     ) ,
+   //.AXI_DT1    ( r_axi_dt1          ) ,
    .AXI_DT2    ( r_axi_dt2          ) ,
    .AXI_DT3    ( r_axi_dt3          ) ,
    .AXI_DT4    ( r_axi_dt4          ) ,
@@ -129,7 +130,7 @@ qtt_periph  # (
    .T_W              (T_W) ,
    .FIFO_W           (FIFO_W) ,
    .ADC_RES          (ADC_RES),
-   .DTR_RST          (DTR_RST) 
+   .DTR_RST          (DTR_RST) // Get rid of after adding axi_reg
 ) qtt (
    .clk_i      ( c_clk     ) ,
    .rst_ni     ( c_aresetn    ) ,
@@ -152,6 +153,7 @@ qtt_periph  # (
    .QP_DELAY    ( r_qp_delay    ) ,
    .QP_FRAC     ( r_qp_frac     ) ,
    .QP_THRES    ( r_qp_threshold) ,
+   .QP_DTR_RST  ( r_qp_dead_time) ,
    .AXI_DT1     ( ) ,
    .AXI_DT2     ( ) ,
    .AXI_DT3     ( ) ,

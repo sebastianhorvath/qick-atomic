@@ -48,6 +48,7 @@ module time_tagger #(
     // DMA AXI Stream 
     // Axi Registers 
     input   wire        [31:0]          threshold   ,
+    input   wire        [31:0]          dead_time   ,
     // Inputs from the Interface
     input wire                          arm         ,
     input wire                          read_toa    , // connect to interface pop
@@ -101,6 +102,7 @@ acq_dtp #(
     .rst_ni             (rst_ni)            ,
     .tdata              (tdata)             ,
     .qp_threshold       (threshold[ADC_RES-1:0]),
+    .qp_dead_time       (dead_time)         ,
     .armed              (arm)               ,
     .acq_en             (acq_en)            ,
     .store_en           (store_en)          ,
@@ -140,11 +142,14 @@ tt_fifo #(
 always_ff @(posedge clk_i, negedge rst_ni) begin
     if (!rst_ni) status <= 0;
     else begin
+        // Add a command to just read the status register and not the fifo to display amount of data
         if (read_toa) begin
             if ( fifo_empty )  status[ERR_W+FIFO_W-1:FIFO_W] = `EMPTY_ERR;
-            else status[FIFO_W-1:0] <= (fifo_count - 1'b1); // always 1 less because just read value
+            else begin 
+                status[FIFO_W-1:0] <= (fifo_count - 1'b1); // always 1 less because just read value
+                status[ERR_W+FIFO_W-1:FIFO_W] = 0;
+            end
         end
-
     end
 end
 

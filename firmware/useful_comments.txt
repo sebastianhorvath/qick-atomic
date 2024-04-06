@@ -46,3 +46,15 @@ I believe we have everything necessary from a triggering perspective.
 1. Trigger on triggered to see the value and the time stamp and check that we are triggering 
 2. Trigger ILA on the axi command to check each ones fucntion 
 3. Trigger ILA on arm for watching the state behavior etc. 
+
+
+For measurements:
+Measure different slew rates (change a ramp up frequency)
+Measure the base timing jitter and compare the distribution with the broadband noise frequency from the digilent discovery 
+Our goal is to correlate the actual jitter distribution with the predicted jitter distribution for the signal. 
+Then we can speculate the jitter distribution for the photon signal
+
+
+Changes to the Time Tagger:
+Make Deadtime a configureable parameter from register
+

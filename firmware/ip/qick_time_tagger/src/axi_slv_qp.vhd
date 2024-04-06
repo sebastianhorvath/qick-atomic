@@ -41,7 +41,8 @@ entity axi_slv_qp is
 	 QP_FRAC	   : out std_logic_vector (31 downto 0) ;
 	 QP_DELAY	   : out std_logic_vector (31 downto 0) ;
 	 QP_THRES	   : out std_logic_vector (31 downto 0) ;
-     AXI_DT1       : out std_logic_vector (31 downto 0) ;
+	 QP_DTR_RST    : out std_logic_vector (31 downto 0) ;
+     --AXI_DT1       : out std_logic_vector (31 downto 0) ;
      AXI_DT2       : out std_logic_vector (31 downto 0) ;
      AXI_DT3       : out std_logic_vector (31 downto 0) ;
      AXI_DT4       : out std_logic_vector (31 downto 0) ;
@@ -519,10 +520,11 @@ begin
 
 QP_CTRL <= slv_reg0( 7 downto 0);
 QP_CFG  <= slv_reg1( 7 downto 0);
-AXI_DT1 <= slv_reg2(31 downto 0);
+-- AXI_DT1 <= slv_reg2(31 downto 0); Use the AXI_DT4 to set the Detector Reset Time 
 AXI_DT2 <= slv_reg3(31 downto 0);
 AXI_DT3 <= slv_reg4(31 downto 0);
-AXI_DT4 <= slv_reg5(31 downto 0);
+AXI_DT4 <= slv_reg5(31 downto 0);  
+QP_DTR_RST <= slv_reg2(31 downto 0); 
 QP_DELAY <= slv_reg11(31 downto 0);
 QP_FRAC <= slv_reg12(31 downto 0);
 QP_THRES <= slv_reg13(31 downto 0);

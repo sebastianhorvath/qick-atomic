@@ -23,7 +23,7 @@ end
 // Parameters and Constants
 ///////////////////////////////////////////////////////////////////////
 
-parameter integer FIFO_DEPTH = 32;
+parameter integer FIFO_WIDTH = 7;
 parameter integer TIME_WIDTH = 28;
 parameter integer NUM_SAMPLES = 8;
 parameter integer DATA_WIDTH = 16;
@@ -51,11 +51,13 @@ reg [ 7:0] r_qp_ctrl, r_qp_cfg;
 reg [31:0] r_qp_threshold;
 reg [31:0] r_qp_dt1, r_qp_dt2, r_qp_dt3, r_qp_dt4, r_qp_status;
 
+reg [31:0] qp_val_do;
+
 reg [DATA_WIDTH-1:0] adc_memory [0:1023];
 
 qtt_periph #(
     .DT_W           (DATA_WIDTH),
-    .FIFO_DEP       (FIFO_DEPTH),
+    .FIFO_W         (FIFO_WIDTH),
     .T_W            (TIME_WIDTH),
     .N_S            (NUM_SAMPLES),
     .DTR_RST        (DETECTOR_RESET)
@@ -86,15 +88,15 @@ qtt_periph #(
    .QP_DT3      ( r_qp_dt3      ) ,
    .QP_DT4      ( r_qp_dt4      ) ,
    .QP_STATUS   ( r_qp_status   ) ,
-   .QP_DEBUG    ( ) ,
    .qp_time     ( qp_time       ) , 
-   .qp_do       ( qp_do_s       ) );
+   .qp_do       ( qp_do_s       ) ,
+   .qp_val_do   ( qp_val_do     ));
 
 
 int cycles;
 task START_SIMULATION(); begin
     $display("START SIMULATION");
-    $readmemb("../firmware/ip/qick_peripheral_template/TB/Mem_dt/nanowire1.txt", adc_memory);
+    $readmemb("../../../../../ip/qick_time_tagger/TB/Mem_dt/nanowire1.txt", adc_memory);
     rst_ni = 0;
     cycles = 0;
     qp_en_i = 0;
