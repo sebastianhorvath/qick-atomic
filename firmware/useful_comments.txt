@@ -58,3 +58,5 @@ Then we can speculate the jitter distribution for the photon signal
 Changes to the Time Tagger:
 Make Deadtime a configureable parameter from register
 
+Also fixing the dead time retriggering logic
+

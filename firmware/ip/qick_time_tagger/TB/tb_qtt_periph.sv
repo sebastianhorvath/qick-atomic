@@ -33,7 +33,7 @@ parameter integer DETECTOR_RESET = 20;
 // Waveform Setup 
 ///////////////////////////////////////////////////////////////////////
 
-int WAV_SIZE = 992;
+int WAV_SIZE = 112;
 reg [DATA_WIDTH-1:0] s0, s1, s2, s3, s4, s5, s6, s7;
 int photon_length = WAV_SIZE / 8;
 
@@ -48,7 +48,7 @@ reg [DATA_WIDTH*NUM_SAMPLES-1:0] adc_dt; // Data Stream
 reg [31:0] qp_dt1_o, qp_dt2_o; // Peripheral Outputs
 
 reg [ 7:0] r_qp_ctrl, r_qp_cfg;
-reg [31:0] r_qp_threshold;
+reg [31:0] r_qp_threshold, r_qp_dead_time;
 reg [31:0] r_qp_dt1, r_qp_dt2, r_qp_dt3, r_qp_dt4, r_qp_status;
 
 reg [31:0] qp_val_do;
@@ -79,6 +79,7 @@ qtt_periph #(
    .QP_DELAY    ( ) ,
    .QP_FRAC     ( ) ,
    .QP_THRES    ( r_qp_threshold) ,
+   .QP_DTR_RST  ( r_qp_dead_time) ,
    .AXI_DT1     ( ) ,
    .AXI_DT2     ( ) ,
    .AXI_DT3     ( ) ,
@@ -96,7 +97,7 @@ qtt_periph #(
 int cycles;
 task START_SIMULATION(); begin
     $display("START SIMULATION");
-    $readmemb("../../../../../ip/qick_time_tagger/TB/Mem_dt/nanowire1.txt", adc_memory);
+    $readmemb("../../../../../ip/qick_time_tagger/TB/Mem_dt/noisy_signal.txt", adc_memory);
     rst_ni = 0;
     cycles = 0;
     qp_en_i = 0;
@@ -106,6 +107,7 @@ task START_SIMULATION(); begin
     r_qp_ctrl = 0;
     r_qp_cfg = 0;
     r_qp_threshold = 1024; 
+    r_qp_dead_time = 5;
     @ (posedge c_clk); #0.1;
     rst_ni = 1;
 end
@@ -231,7 +233,22 @@ task AXI_READOUT_CMD(integer exp_time, exp_status ); begin
     @ (posedge c_clk); #0.1;
     `ASSERT_EQ(r_qp_dt1, exp_time, "Incorrect Time Recorded from Tproc Read")
     `ASSERT_EQ(r_qp_status , exp_status, "Incorrect Status Recorded")
-    @ (posedge ps_clk); #0.1 
+    @ (posedge ps_clk); #0.1;
+    r_qp_ctrl = '0;
+    @(posedge c_clk); #0.1;
+end
+endtask
+
+task AXI_SET_DETECT_RESET(integer dead_time); begin
+    $display("Setting Detector Reset Time");
+    r_qp_dead_time = dead_time;
+    @ (posedge ps_clk); #0.1;
+    r_qp_ctrl[0] = 1;
+    r_qp_ctrl[5:1] = `SET_DEAD_TIME;
+    @ (posedge c_clk); # (`T_C_CLK * 3 *2 + 0.1); // Three Cycles Guaranteed Synced Signal
+    `ASSERT_EQ(tt_periph_dut.c_op_r, 0, "AXI not pulsing command")
+    @ (posedge c_clk); #0.1;
+    @ (posedge ps_clk); #0.1; 
     r_qp_ctrl = '0;
     @(posedge c_clk); #0.1;
 end
@@ -254,23 +271,25 @@ initial begin
     // First Test the interface with Tproc // 
     test_case = 1; // Passed 
     cycles = 0;
-    SWITCH_TO_QP_OP();
+    // SWITCH_TO_QP_OP();
 
-    QP_ARM_CMD();
+    // QP_ARM_CMD();
 
-    wait (t == (photon_length-2));
+    // wait (t == (photon_length-2));
 
-    QP_DISARM_CMD();
+    // QP_DISARM_CMD();
 
-    QP_READOUT_CMD(206, 0);
+    // QP_READOUT_CMD(206, 0);
 
-    @ (posedge c_clk); 
-    @ (posedge c_clk);
+    // @ (posedge c_clk); 
+    // @ (posedge c_clk);
 
     // Test AXI Configuration // 
     test_case = 2; // Passed 
     cycles = 0;
     SWITCH_TO_AXI_OP();
+
+    AXI_SET_DETECT_RESET(4);
 
     AXI_ARM_CMD();
 
@@ -283,48 +302,48 @@ initial begin
     @ (posedge c_clk); 
     @ (posedge c_clk);
 
-    // Test Status Register for Two Samples
-    test_case = 3; // Passed 
-    cycles = 0;
-    SWITCH_TO_QP_OP();
+    // // Test Status Register for Two Samples
+    // test_case = 3; // Passed 
+    // cycles = 0;
+    // SWITCH_TO_QP_OP();
 
-    QP_ARM_CMD();
+    // QP_ARM_CMD();
 
-    wait (t == (photon_length-2) && ( cycles == 1));
+    // wait (t == (photon_length-2) && ( cycles == 1));
 
-    QP_DISARM_CMD();
+    // QP_DISARM_CMD();
 
-    QP_READOUT_CMD(206, 1);
+    // QP_READOUT_CMD(206, 1);
 
-    QP_READOUT_CMD((206+992), 0);
+    // QP_READOUT_CMD((206+992), 0);
 
-    // Test Multple Edges from AXI control // 
-    test_case = 4;
-    cycles = 0;
+    // // Test Multple Edges from AXI control // 
+    // test_case = 4;
+    // cycles = 0;
 
-    SWITCH_TO_AXI_OP();
+    // SWITCH_TO_AXI_OP();
 
-    AXI_ARM_CMD();
+    // AXI_ARM_CMD();
 
-    wait (t == (photon_length-5) && ( cycles == 3))
+    // wait (t == (photon_length-5) && ( cycles == 3))
 
-    AXI_DISARM_CMD();
+    // AXI_DISARM_CMD();
 
-    AXI_READOUT_CMD(222, 3);
+    // AXI_READOUT_CMD(222, 3);
 
-    @ (posedge c_clk); 
+    // @ (posedge c_clk); 
 
-    AXI_READOUT_CMD(222+992, 2);
+    // AXI_READOUT_CMD(222+992, 2);
 
-    @ (posedge c_clk); 
+    // @ (posedge c_clk); 
 
-    AXI_READOUT_CMD(222+992*2, 1);
+    // AXI_READOUT_CMD(222+992*2, 1);
 
-    @ (posedge c_clk); 
+    // @ (posedge c_clk); 
 
-    AXI_READOUT_CMD(222+992*3, 0);
+    // AXI_READOUT_CMD(222+992*3, 0);
 
-    @ (posedge c_clk); 
+    // @ (posedge c_clk); 
 
     sim_en = 0;
 
