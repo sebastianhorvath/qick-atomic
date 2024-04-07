@@ -276,7 +276,8 @@ time_tagger #(
    .fifo_out         (tt_fifo_out)     ,   // From Interface
    .status           (tt_status)       ,   // To Interface
    .fifo_empty       (tt_fifo_empty)   ,      // To Interface
-   .tt_debug         (qtt_debug[4:0])
+   .tt_debug         (qtt_debug[4:0])  ,
+   .below_thresh     (qtt_debug[13])
 );
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -313,7 +314,7 @@ end
 wire [31:0] qtt_debug; 
 assign qtt_debug[11] = tt_arm;
 assign qtt_debug[12] = tt_read_toa;
-assign qtt_debug[31:13] = '0;
+assign qtt_debug[31:14] = '0;
 assign qp_do = qtt_debug;
 
 // Fifo Value 

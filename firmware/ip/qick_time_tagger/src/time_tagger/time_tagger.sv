@@ -57,7 +57,8 @@ module time_tagger #(
     output reg          [31:0]          status      , 
     output reg                          fifo_empty  ,
     // Debug
-    output wire         [ 4:0]         tt_debug    
+    output wire         [ 4:0]         tt_debug     ,
+    output wire                        below_thresh   
 );
 
 localparam int ERR_W = 3;
@@ -110,7 +111,9 @@ acq_dtp #(
     .triggered          (triggered)         ,
     .store_rdy          (store_rdy)         ,
     .wake_up            (wake_up)           ,
-    .toa_dt             (toa_dt)
+    .toa_dt             (toa_dt)            ,
+    // Debugg 
+    .db_below_thr       (below_thresh)
 );
 
 ///////////////////////////////////////////////////////////////////////////////

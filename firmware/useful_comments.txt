@@ -36,6 +36,7 @@ qp_do
  
                                                                                                   |   tt_read_toa   |  tt_arm | axi_cfg  |      axi_op      |  store_rdy |  trig |  acq_en | tt_state  |
 
+13. Is below threshold value
 
 What do I trigger the ILA core on?
 - First option is the config or any of the commands such as ARM, DISARM, READ

@@ -43,12 +43,17 @@ module acq_dtp #(
     output  reg                         store_rdy   , // Calculated the value to store
     output  wire                        wake_up     ,
     // FIFO Outputs
-    output  wire      [31:0]            toa_dt      
+    output  wire      [31:0]            toa_dt      , 
+    // Debug           
+    output  wire                        db_below_thr                  
 );
 
 wire [N_S-1:0] edge_index;
 wire above_thresh, below_thresh;
 reg alr_trig;
+
+// Debug below Threshold 
+assign db_below_thr = below_thresh;
 
 /////////////////////////////////////////////////////////////////////////////
 // Time Counter
