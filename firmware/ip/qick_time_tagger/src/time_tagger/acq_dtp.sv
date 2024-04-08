@@ -71,7 +71,7 @@ end
 // Storing the Trigger Time (Prevents effects from latency)
 /////////////////////////////////////////////////////////////////////////////
 reg [T_W-1:0] trig_time;
-assign triggered = above_thresh & !alr_trig;
+assign triggered = above_thresh && !alr_trig;
 
 always_ff @(posedge clk_i, negedge rst_ni) begin
     if (!rst_ni) begin
@@ -84,7 +84,7 @@ always_ff @(posedge clk_i, negedge rst_ni) begin
             alr_trig <= 1;
         end
         // If already triggered wait until below threshold to reallow a trigger, but don't allow when dead
-        if (alr_trig && below_thresh && !asleep) alr_trig <= 0;
+        if (alr_trig && below_thresh && acq_en) alr_trig <= 0;
     end
 end
 
