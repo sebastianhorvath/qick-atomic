@@ -36,7 +36,6 @@ qp_do
  
                                                                                                   |   tt_read_toa   |  tt_arm | axi_cfg  |      axi_op      |  store_rdy |  trig |  acq_en | tt_state  |
 
-13. Is below threshold value
 
 What do I trigger the ILA core on?
 - First option is the config or any of the commands such as ARM, DISARM, READ
@@ -50,14 +49,9 @@ I believe we have everything necessary from a triggering perspective.
 
 
 For measurements:
-Measure different slew rates (change a ramp up frequency)
-Measure the base timing jitter and compare the distribution with the broadband noise frequency from the digilent discovery 
-Our goal is to correlate the actual jitter distribution with the predicted jitter distribution for the signal. 
-Then we can speculate the jitter distribution for the photon signal
-
-
-Changes to the Time Tagger:
-Make Deadtime a configureable parameter from register
-
-Also fixing the dead time retriggering logic
+- Measure different slew rates (change a ramp up frequency)
+- Measure the base timing jitter and compare the distribution with the broadband noise frequency from the digilent discovery 
+- Our goal is to correlate the actual jitter distribution with the predicted jitter distribution for the signal. 
+- Then we can speculate the jitter distribution for the photon signal
+- Slew rate for the nanowire is determined by taking the derivative of the pulse and averaging it everywhere along the pulse up until the peak 
 

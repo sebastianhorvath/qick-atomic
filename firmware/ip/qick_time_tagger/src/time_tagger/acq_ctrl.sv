@@ -77,7 +77,6 @@ always_ff @(posedge clk_i, negedge rst_ni) begin
             EVENT_STORE_ST: begin
                 if (store_rdy) acq_state <= SLEEP_TIME_ST;
             end
-            // Keep in asleep state (eliminates the need for a dead signal)
             SLEEP_TIME_ST: begin 
                 if (wake_up) begin
                     if (armed) acq_state <= EVENT_WAIT_ST;
