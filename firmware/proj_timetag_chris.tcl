@@ -106,7 +106,7 @@ set files [list \
   [file normalize "${origin_dir}/ip/qick_time_tagger/src/headers"] \
   [file normalize "${origin_dir}/ip/qick_time_tagger/src/time_tagger"] \
   [file normalize "${origin_dir}/ip/qick_time_tagger/src/edge_detect/dsp_12bit_edge_comp/dsp_12bit_edge_comp.xci"] \
-  [file normalize "$(origin_dir)/ip/qick_time_tagger/src/edge_detect/dsp_14bit_edge_comp/dsp_14bit_edge_comp.xci"] \
+  [file normalize "${origin_dir}/ip/qick_time_tagger/src/edge_detect/dsp_14bit_edge_comp/dsp_14bit_edge_comp.xci"] \
 ]
 add_files -norecurse -fileset $obj $files
 
