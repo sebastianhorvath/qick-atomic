@@ -40,7 +40,7 @@ if { [info exists ::user_project_name] } {
 }
 
 variable script_file
-set script_file "proj_4x2_tt_chris.tcl"
+set script_file "proj_timetag_chris.tcl"
 
 # Help information for this script
 proc print_help {} {
@@ -105,8 +105,8 @@ set files [list \
   [file normalize "${origin_dir}/ip/qick_time_tagger/src/fifo"] \
   [file normalize "${origin_dir}/ip/qick_time_tagger/src/headers"] \
   [file normalize "${origin_dir}/ip/qick_time_tagger/src/time_tagger"] \
-  [file normalize "${origin_dir}/ip/qick_time_tagger/src/edge_detect/dsp_edge_crossing/dsp_edge_crossing.xci"] \
-  [file normalize "$(origin_dir)/ip/qick_time_tagger/src/edge_detect/dsp_edge_crossing_14bit/dsp_edge_crossing_14bit.xci"] \
+  [file normalize "${origin_dir}/ip/qick_time_tagger/src/edge_detect/dsp_12bit_edge_comp/dsp_12bit_edge_comp.xci"] \
+  [file normalize "$(origin_dir)/ip/qick_time_tagger/src/edge_detect/dsp_14bit_edge_comp/dsp_14bit_edge_comp.xci"] \
 ]
 add_files -norecurse -fileset $obj $files
 
@@ -127,12 +127,12 @@ set_property -name "top_auto_set" -value "0" -objects $obj
 # Set 'sources_1' fileset object
 set obj [get_filesets sources_1]
 set files [list \
- [file normalize "${origin_dir}/ip/qick_time_tagger/src/edge_detect/dsp_edge_crossing/dsp_edge_crossing.xci"] \
+ [file normalize "${origin_dir}/ip/qick_time_tagger/src/edge_detect/dsp_12bit_edge_comp/dsp_12bit_edge_comp.xci"] \
 ]
 add_files -norecurse -fileset $obj $files
 
 # Set 'sources_1' fileset file properties for remote files
-set file "$origin_dir/ip/qick_time_tagger/src/edge_detect/dsp_edge_crossing/dsp_edge_crossing.xci"
+set file "$origin_dir/ip/qick_time_tagger/src/edge_detect/dsp_12bit_edge_comp/dsp_12bit_edge_comp.xci"
 set file [file normalize $file]
 set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
 set_property -name "generate_files_for_reference" -value "0" -objects $file_obj
@@ -142,7 +142,7 @@ if { ![get_property "is_locked" $file_obj] } {
 }
 
 
-set file "$origin_dir/ip/qick_time_tagger/src/edge_detect/dsp_edge_crossing_14bit/dsp_edge_crossing_14bit.xci"
+set file "$origin_dir/ip/qick_time_tagger/src/edge_detect/dsp_14bit_edge_comp/dsp_14bit_edge_comp.xci"
 set file [file normalize $file]
 set file_obj [get_files -of_objects [get_filesets sources_1] [list "*$file"]]
 set_property -name "generate_files_for_reference" -value "0" -objects $file_obj
