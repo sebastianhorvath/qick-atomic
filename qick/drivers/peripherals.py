@@ -130,7 +130,7 @@ class QICK_Time_Tagger(SocIp):
                 print('Interpolation bits max Value ',  self.cfg['cmp_inter'])
         else:
             print('error Slope Comparator not implemented')
-    def pop_dt(self,value):
+    def pop_dt(self):
         self.qtt_ctrl    = 1+2* 2
     def set_threshold(self,value):
         self.axi_dt1     = value
