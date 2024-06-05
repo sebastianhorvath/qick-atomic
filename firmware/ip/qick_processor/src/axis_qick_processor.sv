@@ -2,8 +2,9 @@
 //  FERMI RESEARCH LAB
 ///////////////////////////////////////////////////////////////////////////////
 //  Author         : Martin Di Federico
-//  Date           : 11-2023
-//  Version        : 2
+//  Date           : 2024-5-10
+//  Version        : 3 
+//  Revision       : 20 (Use Assembler Version 3 Rev-20)
 ///////////////////////////////////////////////////////////////////////////////
 //  QICK PROCESSOR :  tProc_v2
 /* Description: 
@@ -15,26 +16,28 @@ qick_processor top level file
 
 module axis_qick_processor # (
    parameter DUAL_CORE      =  0 , // 0-Single Core  1-Dual core
+   parameter GEN_SYNC       =  0 , // Generate Sync Signal
    parameter IO_CTRL        =  0 , // 0-No IO control 1-Add proc_strat and Proc Stop IN
-   parameter DEBUG          =  0 , // 0-No Debug 1-Only Registers 2-Registers and OUT Signals
+   parameter DEBUG          =  1, // 0-No Debug 1-Only Registers 2-Registers and OUT Signals
    parameter TNET           =  0 , // QNET Interfrace 0-No 1-Yes
    parameter QCOM           =  0 , // QCOM Interfrace 0-No 1-Yes
    parameter CUSTOM_PERIPH  =  0 , // PERIPH Interfrace 0-No 1-ONE 2-Two
-   parameter LFSR           =  0 , // LFSR 0-No 1-Yes 
+   parameter LFSR           =  1 , // LFSR 0-No 1-Yes 
    parameter DIVIDER        =  0 , // DIVIDER 0-No 1-Yes 
-   parameter ARITH          =  1 , // Arith 0-No 1-Yes 
+   parameter ARITH          =  0 , // Arith 0-No 1-Yes 
    parameter EXT_FLAG       =  0 , // External Flag Input 0-No 1-Yes
    parameter TIME_READ      =  1 , // Time in sreg and AXI-Reg 0-No 1-Yes
    parameter FIFO_DEPTH     =  9, // 9 Bits in Dispatcher FIFOs address
-   parameter PMEM_AW        =  10, // Bits in Program Memory address
-   parameter DMEM_AW        =  10, // Bits in Data Memory address
-   parameter WMEM_AW        =  10, // Bits in WaveParam Memory address
+   parameter PMEM_AW        =  8, // Bits in Program Memory address
+   parameter DMEM_AW        =  8, // Bits in Data Memory address
+   parameter WMEM_AW        =  8, // Bits in WaveParam Memory address
    parameter REG_AW         =  4 , // Bits to address DREG
-   parameter IN_PORT_QTY    =  2 , // Number of Input Ports
+   parameter IN_PORT_QTY    =  1 , // Number of Input Ports
    parameter OUT_TRIG_QTY   =  2 , // Number of Output Trigger  Ports
    parameter OUT_DPORT_QTY  =  1 , // Number of Output Data Ports
    parameter OUT_DPORT_DW   =  4 , // BitSize of Output Data Ports
-   parameter OUT_WPORT_QTY  =  2   // Number of Output Wave Ports
+   parameter OUT_WPORT_QTY  =  1 ,  // Number of Output Wave Ports
+   parameter CALL_DEPTH     =  255 // Nested Functions
 )(
 // Core, Time and AXI CLK & RST.
    input  wire                t_clk_i        ,
@@ -54,6 +57,7 @@ module axis_qick_processor # (
    input  wire                time_updt_i    ,
    input  wire  [31:0]        time_dt_i      ,
    output wire  [47:0]        t_time_abs_o   ,
+   output wire                pulse_sync_o   ,
 //QNET
    output wire                qnet_en_o      ,
    output wire  [4 :0]        qnet_op_o      ,
@@ -128,38 +132,54 @@ module axis_qick_processor # (
    input  wire                s_axi_rready      ,
    
 /// DATA PORT INPUT  
-   input wire   [63:0]       s0_axis_tdata      ,
-   input wire                s0_axis_tvalid     ,
-   input wire   [63:0]       s1_axis_tdata      ,
-   input wire                s1_axis_tvalid     ,
-   input wire   [63:0]       s2_axis_tdata      ,
-   input wire                s2_axis_tvalid     ,
-   input wire   [63:0]       s3_axis_tdata      ,
-   input wire                s3_axis_tvalid     ,
-   input wire   [63:0]       s4_axis_tdata      ,
-   input wire                s4_axis_tvalid     ,
-   input wire   [63:0]       s5_axis_tdata      ,
-   input wire                s5_axis_tvalid     ,
-   input wire   [63:0]       s6_axis_tdata      ,
-   input wire                s6_axis_tvalid     ,
-   input wire   [63:0]       s7_axis_tdata      ,
-   input wire                s7_axis_tvalid     ,
-   input wire   [63:0]       s8_axis_tdata      ,
-   input wire                s8_axis_tvalid     ,
-   input wire   [63:0]       s9_axis_tdata      ,
-   input wire                s9_axis_tvalid     ,
-   input wire   [63:0]       s10_axis_tdata     ,
-   input wire                s10_axis_tvalid    ,
-   input wire   [63:0]       s11_axis_tdata     ,
-   input wire                s11_axis_tvalid    ,
-   input wire   [63:0]       s12_axis_tdata     ,
-   input wire                s12_axis_tvalid    ,
-   input wire   [63:0]       s13_axis_tdata     ,
-   input wire                s13_axis_tvalid    ,
-   input wire   [63:0]       s14_axis_tdata     ,
-   input wire                s14_axis_tvalid    ,
-   input wire   [63:0]       s15_axis_tdata     ,
-   input wire                s15_axis_tvalid    ,
+   input  wire   [63:0]       s0_axis_tdata      ,
+   input  wire                s0_axis_tvalid     ,
+   output wire                s0_axis_tready     ,
+   input  wire   [63:0]       s1_axis_tdata      ,
+   input  wire                s1_axis_tvalid     ,
+   output wire                s1_axis_tready     ,
+   input  wire   [63:0]       s2_axis_tdata      ,
+   input  wire                s2_axis_tvalid     ,
+   output wire                s2_axis_tready     ,
+   input  wire   [63:0]       s3_axis_tdata      ,
+   input  wire                s3_axis_tvalid     ,
+   output wire                s3_axis_tready     ,
+   input  wire   [63:0]       s4_axis_tdata      ,
+   input  wire                s4_axis_tvalid     ,
+   output wire                s4_axis_tready     ,
+   input  wire   [63:0]       s5_axis_tdata      ,
+   input  wire                s5_axis_tvalid     ,
+   output wire                s5_axis_tready     ,
+   input  wire   [63:0]       s6_axis_tdata      ,
+   input  wire                s6_axis_tvalid     ,
+   output wire                s6_axis_tready     ,
+   input  wire   [63:0]       s7_axis_tdata      ,
+   input  wire                s7_axis_tvalid     ,
+   output wire                s7_axis_tready     ,
+   input  wire   [63:0]       s8_axis_tdata      ,
+   input  wire                s8_axis_tvalid     ,
+   output wire                s8_axis_tready     ,
+   input  wire   [63:0]       s9_axis_tdata      ,
+   input  wire                s9_axis_tvalid     ,
+   output wire                s9_axis_tready     ,
+   input  wire   [63:0]       s10_axis_tdata     ,
+   input  wire                s10_axis_tvalid    ,
+   output wire                s10_axis_tready    ,
+   input  wire   [63:0]       s11_axis_tdata     ,
+   input  wire                s11_axis_tvalid    ,
+   output wire                s11_axis_tready    ,
+   input  wire   [63:0]       s12_axis_tdata     ,
+   input  wire                s12_axis_tvalid    ,
+   output wire                s12_axis_tready    ,
+   input  wire   [63:0]       s13_axis_tdata     ,
+   input  wire                s13_axis_tvalid    ,
+   output wire                s13_axis_tready    ,
+   input  wire   [63:0]       s14_axis_tdata     ,
+   input  wire                s14_axis_tvalid    ,
+   output wire                s14_axis_tready    ,
+   input  wire   [63:0]       s15_axis_tdata     ,
+   input  wire                s15_axis_tvalid    ,
+   output wire                s15_axis_tready    ,
 // OUT WAVE PORTS
    // AXI Stream Master  0 ///
    output wire  [167:0]       m0_axis_tdata     ,
@@ -210,7 +230,7 @@ module axis_qick_processor # (
    output wire  [167:0]       m15_axis_tdata    ,
    output wire                m15_axis_tvalid   ,
    input  wire                m15_axis_tready   ,
-// OUT DATA PORTS
+   ///// TRIGGERS
    output reg                 trig_0_o          ,
    output reg                 trig_1_o          ,
    output reg                 trig_2_o          ,
@@ -219,17 +239,40 @@ module axis_qick_processor # (
    output reg                 trig_5_o          ,
    output reg                 trig_6_o          ,
    output reg                 trig_7_o          ,
+   output reg                 trig_8_o          ,
+   output reg                 trig_9_o          ,
+   output reg                 trig_10_o         ,
+   output reg                 trig_11_o         ,
+   output reg                 trig_12_o         ,
+   output reg                 trig_13_o         ,
+   output reg                 trig_14_o         ,
+   output reg                 trig_15_o         ,
+   output reg                 trig_16_o         ,
+   output reg                 trig_17_o         ,
+   output reg                 trig_18_o         ,
+   output reg                 trig_19_o         ,
+   output reg                 trig_20_o         ,
+   output reg                 trig_21_o         ,
+   output reg                 trig_22_o         ,
+   output reg                 trig_23_o         ,
+   output reg                 trig_24_o         ,
+   output reg                 trig_25_o         ,
+   output reg                 trig_26_o         ,
+   output reg                 trig_27_o         ,
+   output reg                 trig_28_o         ,
+   output reg                 trig_29_o         ,
+   output reg                 trig_30_o         ,
+   output reg                 trig_31_o         ,
+// OUT DATA PORTS
    output reg   [OUT_DPORT_DW-1:0] port_0_dt_o  ,
    output reg   [OUT_DPORT_DW-1:0] port_1_dt_o  ,
    output reg   [OUT_DPORT_DW-1:0] port_2_dt_o  ,
    output reg   [OUT_DPORT_DW-1:0] port_3_dt_o  ,
-
-
 // Debug Signals
    output  wire [31:0]        ps_debug_do       ,
-   output wire  [31:0]        t_time_usr_do     ,
    output wire  [31:0]        t_debug_do        ,
    output wire  [31:0]        t_fifo_do         ,
+   output wire  [31:0]        c_time_usr_do     ,
    output wire  [31:0]        c_debug_do        ,
    output wire  [31:0]        c_time_ref_do     ,
    output wire  [31:0]        c_port_do         ,
@@ -241,7 +284,7 @@ reg                  port_tvalid_si [16];
 reg  [63:0]          port_tdata_si  [16];
 
 // TRIGGER INTERFACE
-wire                 port_trig_so     [8] ;
+wire                 port_trig_so     [32] ;
 
 // DATA OUT INTERFACE
 wire [OUT_DPORT_DW-1:0]  port_tdata_so     [4] ;
@@ -250,9 +293,6 @@ wire                     port_tvalid_so    [4] ;
 wire [167:0]         m_axis_tdata_s [16] ;
 wire                 m_axis_tvalid_s[16] ; 
 wire                 m_axis_tready_s[16] ;
-
-wire [31:0] t_time_usr_ds , t_debug_ds, t_fifo_ds ;
-wire [31:0] c_debug_ds, c_time_ref_ds, c_port_ds, c_core_ds ;
 
 wire [31:0] periph_a_dt, periph_b_dt, periph_c_dt, periph_d_dt ;
 wire [4:0] periph_op, periph_addr ;
@@ -398,14 +438,15 @@ qick_processor# (
    .m_axis_tvalid       ( m_axis_tvalid_s [0:OUT_WPORT_QTY-1]  ) ,
    .m_axis_tready       ( m_axis_tready_s [0:OUT_WPORT_QTY-1]  ) ,
 //DEBUG
+   .dport_di            ( port_tdata_so[0][3:0] ) ,
    .ps_debug_do         ( ps_debug_do           ) ,
-   .t_time_usr_do       ( t_time_usr_ds         ) ,
-   .t_debug_do          ( t_debug_ds            ) ,
-   .t_fifo_do           ( t_fifo_ds             ) ,
-   .c_debug_do          ( c_debug_ds            ) ,
-   .c_time_ref_do       ( c_time_ref_ds         ) ,
-   .c_port_do           ( c_port_ds             ) ,
-   .c_core_do           ( c_core_ds             ) 
+   .c_time_usr_do       ( c_time_usr_do         ) ,
+   .t_debug_do          ( t_debug_do            ) ,
+   .t_fifo_do           ( t_fifo_do             ) ,
+   .c_debug_do          ( c_debug_do            ) ,
+   .c_time_ref_do       ( c_time_ref_do         ) ,
+   .c_port_do           ( c_port_do             ) ,
+   .c_core_do           ( c_core_do             ) 
 );
 
 // OUTPUT ASSIGNMENT
@@ -442,23 +483,47 @@ assign qp2_d_dt_o = periph_d_dt ;
 ///// TRIGGER PORTS
 genvar ind_t;
 generate
-   if (OUT_TRIG_QTY < 7)
-      for (ind_t=7; ind_t >= OUT_TRIG_QTY; ind_t=ind_t-1) begin: TRIGGER_PORT_NOT_PRESENT
+   if (OUT_TRIG_QTY < 31)
+      for (ind_t=31; ind_t >= OUT_TRIG_QTY; ind_t=ind_t-1) begin: TRIGGER_PORT_NOT_PRESENT
          assign port_trig_so [ind_t] = 0;
       end
 endgenerate
-   
-///// TRIGGERS
-assign trig_0_o = port_trig_so[0] ;
-assign trig_1_o = port_trig_so[1] ;
-assign trig_2_o = port_trig_so[2] ;
-assign trig_3_o = port_trig_so[3] ;
-assign trig_4_o = port_trig_so[4] ;
-assign trig_5_o = port_trig_so[5] ;
-assign trig_6_o = port_trig_so[6] ;
-assign trig_7_o = port_trig_so[7] ;
 
-   
+///// TRIGGERS
+assign trig_0_o  = port_trig_so[0]  ;
+assign trig_1_o  = port_trig_so[1]  ;
+assign trig_2_o  = port_trig_so[2]  ;
+assign trig_3_o  = port_trig_so[3]  ;
+assign trig_4_o  = port_trig_so[4]  ;
+assign trig_5_o  = port_trig_so[5]  ;
+assign trig_6_o  = port_trig_so[6]  ;
+assign trig_7_o  = port_trig_so[7]  ;
+assign trig_8_o  = port_trig_so[8]  ;
+assign trig_9_o  = port_trig_so[9]  ;
+assign trig_10_o = port_trig_so[10] ;
+assign trig_11_o = port_trig_so[11] ;
+assign trig_12_o = port_trig_so[12] ;
+assign trig_13_o = port_trig_so[13] ;
+assign trig_14_o = port_trig_so[14] ;
+assign trig_15_o = port_trig_so[15] ;
+assign trig_16_o = port_trig_so[16] ;
+assign trig_17_o = port_trig_so[17] ;
+assign trig_18_o = port_trig_so[18] ;
+assign trig_19_o = port_trig_so[19] ;
+assign trig_20_o = port_trig_so[20] ;
+assign trig_21_o = port_trig_so[21] ;
+assign trig_22_o = port_trig_so[22] ;
+assign trig_23_o = port_trig_so[23] ;
+assign trig_24_o = port_trig_so[24] ;
+assign trig_25_o = port_trig_so[25] ;
+assign trig_26_o = port_trig_so[26] ;
+assign trig_27_o = port_trig_so[27] ;
+assign trig_28_o = port_trig_so[28] ;
+assign trig_29_o = port_trig_so[29] ;
+assign trig_30_o = port_trig_so[30] ;
+assign trig_31_o = port_trig_so[31] ;
+
+  
 ///// DATA OUT PORTS
 genvar ind;
 generate
@@ -482,6 +547,23 @@ generate
          assign m_axis_tvalid_s[ind] = 0 ;
       end
 endgenerate
+
+assign s0_axis_tready  = 1'b1;
+assign s1_axis_tready  = 1'b1;
+assign s2_axis_tready  = 1'b1;
+assign s3_axis_tready  = 1'b1;
+assign s4_axis_tready  = 1'b1;
+assign s5_axis_tready  = 1'b1;
+assign s6_axis_tready  = 1'b1;
+assign s7_axis_tready  = 1'b1;
+assign s8_axis_tready  = 1'b1;
+assign s9_axis_tready  = 1'b1;
+assign s10_axis_tready = 1'b1;
+assign s11_axis_tready = 1'b1;
+assign s12_axis_tready = 1'b1;
+assign s13_axis_tready = 1'b1;
+assign s14_axis_tready = 1'b1;
+assign s15_axis_tready = 1'b1;
 
 assign m_axis_tready_s[0]  = m0_axis_tready  ;
 assign m_axis_tready_s[1]  = m1_axis_tready  ;
@@ -533,25 +615,17 @@ assign m14_axis_tvalid    = m_axis_tvalid_s[14]  ;
 assign m15_axis_tdata     = m_axis_tdata_s [15]  ;
 assign m15_axis_tvalid    = m_axis_tvalid_s[15]  ;
 
-///// DEBUG 
-generate
-   if (DEBUG) begin
-      assign t_time_usr_do = t_time_usr_ds ;
-      assign t_debug_do    = t_debug_ds    ;
-      assign t_fifo_do     = t_fifo_ds     ;
-      assign c_debug_do    = c_debug_ds    ;
-      assign c_time_ref_do = c_time_ref_ds ;
-      assign c_port_do     = c_port_ds     ;
-      assign c_core_do     = c_core_ds     ;
-   end else begin
-      assign t_time_usr_do  = 0;
-      assign t_debug_do    = 0;
-      assign t_fifo_do     = 0;
-      assign c_debug_do    = 0;
-      assign c_time_ref_do = 0;
-      assign c_port_do     = 0;
-      assign c_core_do     = 0;
-   end
-endgenerate
 
+generate
+   reg net_sync;
+   if (GEN_SYNC == 1) begin : SYNC_OUT
+      always_ff @ (posedge t_clk_i, negedge t_resetn) begin
+         if (!t_resetn)   net_sync     <= 1'b0;
+         else             net_sync     <= t_time_abs_o[9];
+      end
+      assign pulse_sync_o = net_sync;
+   end else
+      assign pulse_sync_o = 0;
+endgenerate
+      
 endmodule

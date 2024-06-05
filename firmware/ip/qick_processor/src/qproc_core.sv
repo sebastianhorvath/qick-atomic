@@ -32,7 +32,6 @@ module qproc_core # (
    output wire [31:0]      core_status_o    ,
    output wire [31:0]      core_debug_o     ,
    output wire [31:0]      lfsr_o           ,
-
 // AXI Registers
    input  wire [63:0]      port_dt_i   [ IN_PORT_QTY ] ,
    input wire              flag_i       ,
@@ -134,7 +133,7 @@ reg [63:0 ] in_port_dt_r;
 ///////////////////////////////////////////////////////////////////////////////
 always_ff @(posedge c_clk_i) begin
    if      ( restart_i )    in_port_dt_r  <= 0 ;
-   else if ( port_re   )    in_port_dt_r  <= port_dt_i[port_o.p_addr];
+   else if ( port_re   )    in_port_dt_r  <= port_dt_i[port_o.p_addr[3:0]];
 end
 
  
